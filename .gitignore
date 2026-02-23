@@ -1,6 +1,13 @@
 # mac
 .DS_Store
 
+# Docker volumes
+mysql_data/
+milvus_data/
+etcd_data/
+minio_data/
+.env
+
 # IDE
 .idea/
 .vscode/
