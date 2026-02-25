@@ -33,12 +33,13 @@
 
 ### 2. 登录功能
 
-- [ ] 微信小程序登录与验证（Java）
+- [x] 微信小程序登录与验证（Java）
   * [x] AuthController：`POST /api/auth/wechat/login`（接收 `code` → `openid` → 查/建用户 → 返回 JWT）
   * [x] AuthService：根据 openid 查/建用户（users 表）
   * [x] JWT 签发：返回 `token` + `expiresInSeconds` + `user`
   * [x] Token 校验接口：`GET /api/auth/verify`（Authorization: Bearer <token>）
-  * [ ] 联调验证：在小程序端调用登录接口并保存 token（本地/缓存）
+  * [x] 联调验证：在小程序端调用登录接口并保存 token（本地/缓存）
+  * [x] Spring Security 全局鉴权：除 `/api/auth/**` 与 Knife4j/OpenAPI 页面外，其余接口必须携带 JWT（无状态）
 
 ### 3. 搜索检索数据流
 
