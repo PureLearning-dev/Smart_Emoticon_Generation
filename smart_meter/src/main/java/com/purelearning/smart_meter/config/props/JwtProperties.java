@@ -1,5 +1,4 @@
 package com.purelearning.smart_meter.config.props;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "jwt")
@@ -7,7 +6,7 @@ public class JwtProperties {
 
     private String secret;
 
-    private long ttlSeconds = 604800;
+    private long ttlSeconds;
 
     public String getSecret() {
         return secret;
