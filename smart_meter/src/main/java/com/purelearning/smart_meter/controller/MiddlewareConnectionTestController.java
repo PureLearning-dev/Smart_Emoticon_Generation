@@ -2,6 +2,8 @@ package com.purelearning.smart_meter.controller;
 
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/test/middleware")
+@Tag(name = "Test - 中间件连通性", description = "用于测试 MySQL 与 Milvus 等中间件是否可用的探活接口")
 public class MiddlewareConnectionTestController {
 
     private static final String MYSQL_URL = "jdbc:mysql://localhost:3306/smart_meter_system?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
@@ -24,6 +27,7 @@ public class MiddlewareConnectionTestController {
     private static final String MILVUS_URI = "http://127.0.0.1:19530";
 
     @GetMapping("/mysql")
+    @Operation(summary = "测试 MySQL 连接", description = "尝试建立一次到 MySQL 的 JDBC 连接，返回连接是否成功及错误信息。")
     public ResponseEntity<Map<String, Object>> testMySql() {
         Map<String, Object> result = new HashMap<>();
         // MySQL 的 Connection 实现了 AutoCloseable，可以继续使用 try-with-resources
@@ -39,6 +43,7 @@ public class MiddlewareConnectionTestController {
     }
 
     @GetMapping("/milvus")
+    @Operation(summary = "测试 Milvus 连接", description = "创建 MilvusClientV2 并调用 listDatabases()，用来检测 Milvus 是否正常工作。")
     public ResponseEntity<Map<String, Object>> testMilvus() {
         Map<String, Object> result = new HashMap<>();
 
