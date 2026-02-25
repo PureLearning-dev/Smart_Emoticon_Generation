@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.purelearning.smart_meter.mapper.MemeAssetMapper">
+
+    <select id="selectPublicLatest" resultType="com.purelearning.smart_meter.entity.MemeAsset">
+        SELECT
+            id,
+            title,
+            file_url,
+            thumbnail_url,
+            ocr_text,
+            description,
+            content_text,
+            style_tag,
+            source_type,
+            source,
+            embedding_id,
+            status,
+            is_public,
+            create_time,
+            update_time
+        FROM meme_assets
+        WHERE is_public = 1
+          AND status = 1
+        ORDER BY create_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>
+
