@@ -38,6 +38,12 @@ Smart_Meter_Condition/
 - Java 21（用于 smart_meter）
 - [uv](https://docs.astral.sh/uv/)（Python 包管理）
 
+### 启动中间件
+
+```bash
+docker compose up -d
+```
+
 ### 一键安装依赖
 
 ```bash
@@ -64,8 +70,3 @@ make clean   # 清理 __pycache__、target 等缓存
 make help    # 查看所有可用命令
 ```
 
-## 开发说明
-
-- Python 服务运行在 `http://127.0.0.1:8000`
-- Java 服务默认端口由 Spring Boot 配置（通常为 8080）
-- 两服务可独立开发、测试与部署，通过 HTTP 互相调用
