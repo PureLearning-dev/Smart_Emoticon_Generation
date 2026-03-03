@@ -31,8 +31,7 @@ import java.util.Map;
  * - 调用 {@link JwtService#verify(String)} 校验并解析
  * - 将解析结果写入 {@link SecurityContextHolder}，供后续 Controller/Service 使用
  * <p>
- * 注意：白名单路径（如 {@code /api/auth/**}、Knife4j/OpenAPI 页面）不强制校验 JWT；
- * 其他受保护路径如携带无效 token，将直接返回 401 JSON。
+ * 当前：权限校验已关闭，所有请求均放行；携带有效 token 时仍会写入 SecurityContext。
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -70,21 +69,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (!authorization.startsWith(BEARER_PREFIX)) {
-            if (isPermitAll(request)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            writeUnauthorized(response, request.getRequestURI(), "Invalid Authorization header, expected: Bearer <token>");
+            filterChain.doFilter(request, response);
             return;
         }
 
         String token = authorization.substring(BEARER_PREFIX.length()).trim();
         if (!StringUtils.hasText(token)) {
-            if (isPermitAll(request)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            writeUnauthorized(response, request.getRequestURI(), "Missing JWT after Bearer prefix");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -101,11 +92,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
-            if (isPermitAll(request)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
-            writeUnauthorized(response, request.getRequestURI(), e.getMessage());
+            // 权限校验已关闭：无效 token 时直接放行，不返回 401
+            filterChain.doFilter(request, response);
         }
     }
 

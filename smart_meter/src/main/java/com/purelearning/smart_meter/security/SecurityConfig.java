@@ -9,12 +9,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * Spring Security 安全配置（JWT 无状态鉴权）。
+ * Spring Security 安全配置。
  * <p>
- * 目标：
- * - 放行 {@code /api/auth/**} 以及 Knife4j/OpenAPI 页面
- * - 其余所有接口必须携带并通过 JWT 校验
- * - 不使用 Session（STATELESS）
+ * 当前：全部接口放开，不使用权限校验（开发/联调阶段）。
+ * 后续可恢复 JWT 鉴权：将 anyRequest().permitAll() 改为 anyRequest().authenticated()。
  */
 @Configuration
 @EnableWebSecurity
@@ -45,19 +43,7 @@ public class SecurityConfig {
                 .accessDeniedHandler(deniedHandler)
         );
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/api/auth/**",
-                        "/doc.html",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/webjars/**",
-                        "/error",
-                        "/favicon.ico"
-                ).permitAll()
-                .anyRequest().authenticated()
-        );
+        http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
 
         http.formLogin(form -> form.disable());
         http.httpBasic(basic -> basic.disable());
