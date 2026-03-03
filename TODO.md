@@ -16,6 +16,8 @@
 - [x] 联调与中间件测试
   * Java 联调 Python（AiKoreTestController）
   * MySQL / Milvus 连通测试（MiddlewareConnectionTestController）
+- [x] ai-kore 健康检查
+  * [x] GET /api/v1/health：检查 Milvus 连接
 
 ---
 
@@ -23,13 +25,19 @@
 
 ### 1. 基础数据层（smart_meter）
 
-- [ ] 建表与基础 CRUD（MyBatis-Plus）
+- [x] 建表与基础 CRUD（MyBatis-Plus）
   * [x] 新建 entity：`User.java`、`MemeAsset.java`
   * [x] 新建 mapper：`UserMapper.java`、`MemeAssetMapper.java`
   * [x] 新建 service：`UserService` / `MemeAssetService`（含 impl）
   * [x] 新建 XML：`resources/mapper/UserMapper.xml`、`MemeAssetMapper.xml`
   * [x] 新建基础 CRUD Controller：`/api/users`、`/api/meme-assets`
   * [x] 执行 `SQL/schema.sql` 创建 `users`、`meme_assets` 表（确认库名与 `application.yaml` 一致）
+
+### 3. 文本搜索数据流
+
+- [x] ai-kore：文本向量化 + Milvus 相似检索
+- [x] smart_meter：SearchController、SearchService
+  * [x] GET /api/search?query=xxx&topK=10
 
 ### 2. 登录功能
 
@@ -41,19 +49,15 @@
   * [x] 联调验证：在小程序端调用登录接口并保存 token（本地/缓存）
   * [x] Spring Security 全局鉴权：除 `/api/auth/**` 与 Knife4j/OpenAPI 页面外，其余接口必须携带 JWT（无状态）
 
-### 3. 搜索检索数据流
 
-- [ ] ai-kore：文本向量化 + Milvus ANN 检索接口
-  * 提供接口：输入搜索词 → 返回 Top-K 的向量 ID（及 score）
-- [ ] smart_meter：搜索接口
-  * SearchController：接收关键词 → 调 ai-kore 向量化+检索 → 用 ID 批量查 MySQL meme_assets → 返回列表（含 file_url、标签等）
 
 ### 4. 图搜图数据流
 
-- [ ] ai-kore：图片向量化（CLIP）+ Milvus 相似检索
-  * 接口：上传图片 → 返回 Top-K 的 ID + score
-- [ ] smart_meter：图搜图接口
-  * ImageSearchController：接收图片 → 调 ai-kore → 根据 ID 查 MySQL → 返回 URL、标签、相似度
+- [x] ai-kore：图片向量化（CLIP）+ Milvus 相似检索
+  * [x] vector/search.py：search_by_text、search_by_image
+  * [x] API：POST /api/v1/vector/search-text、search-image、search-image/upload
+- [x] smart_meter：图搜图接口
+  * [x] ImageSearchController：POST /api/search/image、/api/search/image/url
 
 ### 5. AI 配文生成数据流
 
@@ -65,8 +69,20 @@
 
 ### 6. 素材入库数据流（离线）
 
-- [ ] ai-kore：爬虫 + OCR + CLIP 向量化
-  * 爬虫定时任务 → 下载图片 → OCR + 向量化 → 向量入 Milvus，元数据入 MySQL（或先落 MySQL 再由 smart_meter 提供写入接口）
+- [x] ai-kore：单张图片处理管线（下载 → OSS → CLIP → OCR → 向量化 → Milvus）
+  * [x] crawler/spider.py：从 URL 下载图片
+  * [x] storage/oss_client.py：上传至阿里云 OSS
+  * [x] models/clip.py：CLIP 图像/文本向量化
+  * [x] ocr/engine.py：PaddleOCR 文字识别
+  * [x] vector/client.py、collection.py：Milvus 写入
+  * [x] pipeline/image_pipeline.py：串联完整管线，串行处理（每张处理完再处理下一张）
+  * [x] API：POST /api/v1/crawl/process-image、POST /api/v1/crawl/process-images
+  * [x] 配置阿里云OSS的密码账号，用于存储得到的图片
+- [x] ai-kore：元数据入 MySQL 由 smart_meter 提供写入接口供ai-kore进行调用
+  * [x] smart_meter：POST /api/meme-assets/from-pipeline
+  * [x] ai-kore：pipeline 写入 Milvus 后调用 smart_meter 写入 meme_assets
+  * [x] OCR 前对图片做适度缩小（最长边 1024px），加速 Mac CPU 处理，兼顾识别率
+- [ ] 后续实现自动爬取网页中的表情包，并调用上述功能进行自动化收集
 
 ### 7. 用户行为反馈（可选）
 
