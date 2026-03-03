@@ -1,0 +1,119 @@
+"""
+Milvus 向量搜索封装
+
+职责：
+- 文本相似度搜索：文本 → CLIP 向量化 → Milvus ANN（text_vector）
+- 图相似度搜索：图片 → CLIP 向量化 → Milvus ANN（image_vector）
+- 返回 Top-K 的 embedding_id + score
+"""
+
+from pathlib import Path
+from typing import List, Tuple, Union
+
+from pymilvus import Collection
+
+try:
+    from app.core.config import MILVUS_COLLECTION_NAME
+except ImportError:
+    import os
+    MILVUS_COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME", "meme_embeddings")
+
+
+def _search(
+    query_vector: List[float],
+    anns_field: str,
+    *,
+    top_k: int = 10,
+    collection_name: str = MILVUS_COLLECTION_NAME,
+    alias: str = "default",
+) -> List[Tuple[str, float]]:
+    """
+    执行 Milvus ANN 搜索。
+
+    Args:
+        query_vector: 查询向量
+        anns_field: 向量字段名，"text_vector" 或 "image_vector"
+        top_k: 返回数量
+        collection_name: 集合名称
+        alias: 连接别名
+
+    Returns:
+        [(embedding_id, score), ...]，按 score 降序
+    """
+    coll = Collection(collection_name, using=alias)
+    coll.load()
+
+    param = {"metric_type": "IP", "params": {"nprobe": 16}}
+    results = coll.search(
+        data=[query_vector],
+        anns_field=anns_field,
+        param=param,
+        limit=top_k,
+        output_fields=["embedding_id"],
+    )
+
+    out: List[Tuple[str, float]] = []
+    for hits in results:
+        for hit in hits:
+            eid = hit.id if isinstance(hit.id, str) else str(hit.id)
+            score = float(hit.distance)
+            out.append((eid, score))
+    return out
+
+
+def search_by_text(
+    text: str,
+    *,
+    top_k: int = 10,
+    collection_name: str = MILVUS_COLLECTION_NAME,
+    alias: str = "default",
+) -> List[Tuple[str, float]]:
+    """
+    文本相似度搜索。
+
+    Args:
+        text: 待搜索文本
+        top_k: 返回数量
+        collection_name: 集合名称
+        alias: 连接别名
+
+    Returns:
+        [(embedding_id, score), ...]
+    """
+    from models.clip import encode_text
+
+    from vector.client import connect
+
+    if not text or not text.strip():
+        return []
+    connect(alias=alias)
+    vector = encode_text(text.strip())
+    return _search(vector, "text_vector", top_k=top_k, collection_name=collection_name, alias=alias)
+
+
+def search_by_image(
+    image_input: Union[Path, str, "Image.Image"],
+    *,
+    top_k: int = 10,
+    collection_name: str = MILVUS_COLLECTION_NAME,
+    alias: str = "default",
+) -> List[Tuple[str, float]]:
+    """
+    图相似度搜索。
+
+    Args:
+        image_input: 图片路径或 PIL Image
+        top_k: 返回数量
+        collection_name: 集合名称
+        alias: 连接别名
+
+    Returns:
+        [(embedding_id, score), ...]
+    """
+    from models.clip import encode_image
+
+    from vector.client import connect
+
+    connect(alias=alias)
+    vector = encode_image(image_input)
+    return _search(vector, "image_vector", top_k=top_k, collection_name=collection_name, alias=alias)
