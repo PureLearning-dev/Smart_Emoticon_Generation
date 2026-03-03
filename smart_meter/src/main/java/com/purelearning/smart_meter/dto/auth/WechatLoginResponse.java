@@ -23,7 +23,7 @@ public class WechatLoginResponse {
         this.expiresInSeconds = expiresInSeconds;
     }
 
-    public boolean isNewUser() {
+    public boolean getNewUser() {
         return newUser;
     }
 

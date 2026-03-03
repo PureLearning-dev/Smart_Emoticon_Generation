@@ -5,6 +5,8 @@ import com.purelearning.smart_meter.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +23,8 @@ import java.util.List;
 @Tag(name = "Search - 搜索", description = "文本相似度搜索，返回表情包元数据")
 public class SearchController {
 
+    private static final Logger log = LoggerFactory.getLogger(SearchController.class);
+
     private final SearchService searchService;
 
     public SearchController(SearchService searchService) {
@@ -35,6 +39,10 @@ public class SearchController {
     public List<SearchResultItem> search(
             @Parameter(description = "搜索关键词") @RequestParam String query,
             @Parameter(description = "返回数量") @RequestParam(defaultValue = "10") int topK) {
-        return searchService.searchByText(query, Math.min(Math.max(topK, 1), 100));
+        int k = Math.min(Math.max(topK, 1), 100);
+        log.info(">>> [接口] GET /api/search query={} topK={}", query, k);
+        List<SearchResultItem> results = searchService.searchByText(query, k);
+        log.info("<<< [接口] GET /api/search count={}", results.size());
+        return results;
     }
 }

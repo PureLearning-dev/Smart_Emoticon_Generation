@@ -4,6 +4,8 @@ import com.purelearning.smart_meter.dto.search.SearchResultItem;
 import com.purelearning.smart_meter.entity.MemeAsset;
 import com.purelearning.smart_meter.service.MemeAssetService;
 import com.purelearning.smart_meter.service.SearchService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -30,6 +32,8 @@ import java.util.stream.Collectors;
 @Service
 public class SearchServiceImpl implements SearchService {
 
+    private static final Logger log = LoggerFactory.getLogger(SearchServiceImpl.class);
+
     private final RestTemplate restTemplate;
     private final String aiKoreBaseUrl;
     private final MemeAssetService memeAssetService;
@@ -45,18 +49,24 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public List<SearchResultItem> searchByText(String query, int topK) {
+        log.info(">>> [核心] SearchService.searchByText query={} topK={}", query, topK);
         String url = aiKoreBaseUrl + "/api/v1/vector/search-text";
+        log.info("  - 调用 ai-kore POST {}", url);
         Map<String, Object> request = Map.of("query", query, "top_k", topK);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
         ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
                 url, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-        return mapVectorResultsToSearchItems(resp.getBody());
+        List<SearchResultItem> items = mapVectorResultsToSearchItems(resp.getBody());
+        log.info("<<< [核心] SearchService.searchByText count={}", items.size());
+        return items;
     }
 
     @Override
     public List<SearchResultItem> searchByImage(MultipartFile file, int topK) {
+        log.info(">>> [核心] SearchService.searchByImage file={} size={} topK={}",
+                file.getOriginalFilename(), file.getSize(), topK);
         String url = aiKoreBaseUrl + "/api/v1/vector/search-image/upload";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -74,22 +84,29 @@ public class SearchServiceImpl implements SearchService {
             throw new RuntimeException("读取图片失败", e);
         }
 
+        log.info("  - 调用 ai-kore POST {} (multipart)", url);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
                 url + "?top_k=" + topK, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {});
-        return mapVectorResultsToSearchItems(resp.getBody());
+        List<SearchResultItem> items = mapVectorResultsToSearchItems(resp.getBody());
+        log.info("<<< [核心] SearchService.searchByImage count={}", items.size());
+        return items;
     }
 
     @Override
     public List<SearchResultItem> searchByImageUrl(String url, int topK) {
+        log.info(">>> [核心] SearchService.searchByImageUrl url={} topK={}", url, topK);
         String aiUrl = aiKoreBaseUrl + "/api/v1/vector/search-image";
         Map<String, Object> request = Map.of("url", url, "top_k", topK);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        log.info("  - 调用 ai-kore POST {}", aiUrl);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
         ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
                 aiUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-        return mapVectorResultsToSearchItems(resp.getBody());
+        List<SearchResultItem> items = mapVectorResultsToSearchItems(resp.getBody());
+        log.info("<<< [核心] SearchService.searchByImageUrl count={}", items.size());
+        return items;
     }
 
     private List<SearchResultItem> mapVectorResultsToSearchItems(Map<String, Object> response) {
@@ -101,6 +118,7 @@ public class SearchServiceImpl implements SearchService {
         if (results == null || results.isEmpty()) {
             return List.of();
         }
+        log.info("  - 按 embedding_id 批量查 MySQL 元数据");
         List<String> embeddingIds = results.stream()
                 .map(r -> (String) r.get("embedding_id"))
                 .toList();

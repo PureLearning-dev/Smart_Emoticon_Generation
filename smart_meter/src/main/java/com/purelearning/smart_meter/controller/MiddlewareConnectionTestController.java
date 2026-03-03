@@ -4,6 +4,8 @@ import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,8 @@ import java.util.Map;
 @Tag(name = "Test - 中间件连通性", description = "用于测试 MySQL 与 Milvus 等中间件是否可用的探活接口")
 public class MiddlewareConnectionTestController {
 
+    private static final Logger log = LoggerFactory.getLogger(MiddlewareConnectionTestController.class);
+
     private static final String MYSQL_URL = "jdbc:mysql://localhost:3306/smart_meter_system?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
     private static final String MYSQL_USER = "root";
     private static final String MYSQL_PASSWORD = "root";
@@ -29,15 +33,18 @@ public class MiddlewareConnectionTestController {
     @GetMapping("/mysql")
     @Operation(summary = "测试 MySQL 连接", description = "尝试建立一次到 MySQL 的 JDBC 连接，返回连接是否成功及错误信息。")
     public ResponseEntity<Map<String, Object>> testMySql() {
+        log.info(">>> [接口] GET /api/test/middleware/mysql");
         Map<String, Object> result = new HashMap<>();
         // MySQL 的 Connection 实现了 AutoCloseable，可以继续使用 try-with-resources
         try (Connection ignored = DriverManager.getConnection(MYSQL_URL, MYSQL_USER, MYSQL_PASSWORD)) {
             result.put("success", true);
             result.put("message", "MySQL 连接成功");
+            log.info("<<< [接口] GET /api/test/middleware/mysql success=true");
         } catch (SQLException e) {
             result.put("success", false);
             result.put("message", "MySQL 连接失败");
             result.put("error", e.getMessage());
+            log.warn("<<< [接口] GET /api/test/middleware/mysql failed: {}", e.getMessage());
         }
         return ResponseEntity.ok(result);
     }
@@ -45,6 +52,7 @@ public class MiddlewareConnectionTestController {
     @GetMapping("/milvus")
     @Operation(summary = "测试 Milvus 连接", description = "创建 MilvusClientV2 并调用 listDatabases()，用来检测 Milvus 是否正常工作。")
     public ResponseEntity<Map<String, Object>> testMilvus() {
+        log.info(">>> [接口] GET /api/test/middleware/milvus");
         Map<String, Object> result = new HashMap<>();
 
         // 1. 将 Client 声明在外面
@@ -63,10 +71,12 @@ public class MiddlewareConnectionTestController {
 
             result.put("success", true);
             result.put("message", "Milvus 连接成功");
+            log.info("<<< [接口] GET /api/test/middleware/milvus success=true");
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "Milvus 连接失败");
             result.put("error", e.getMessage());
+            log.warn("<<< [接口] GET /api/test/middleware/milvus failed: {}", e.getMessage());
         } finally {
             // 3. 在 finally 块中手动关闭，确保资源释放
             if (client != null) {

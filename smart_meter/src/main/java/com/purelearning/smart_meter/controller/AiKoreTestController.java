@@ -3,6 +3,8 @@ package com.purelearning.smart_meter.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,8 @@ import java.util.Map;
 @RequestMapping("/api/test")
 @Tag(name = "Test - AI 联调", description = "用于联调 Python ai-kore 服务的测试接口")
 public class AiKoreTestController {
+
+    private static final Logger log = LoggerFactory.getLogger(AiKoreTestController.class);
 
     private final RestTemplate restTemplate;
     private final String aiKoreBaseUrl;
@@ -45,13 +49,16 @@ public class AiKoreTestController {
     public ResponseEntity<?> testAiSearch(
             @Parameter(description = "搜索关键词，将传递给 Python 服务")
             @RequestParam(defaultValue = "test") String query) {
+        log.info(">>> [接口] GET /api/test/ai-search query={}", query);
         String url = aiKoreBaseUrl + "/api/v1/vector/search-text";
         try {
             Map<String, Object> request = Map.of("query", query, "top_k", 10);
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
+            log.info("<<< [接口] GET /api/test/ai-search success=true");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.warn("<<< [接口] GET /api/test/ai-search failed: {}", e.getMessage());
             return ResponseEntity.status(503)
                     .body(Map.of(
                             "error", "Python AI 服务联调失败",
@@ -70,12 +77,15 @@ public class AiKoreTestController {
             description = "调用 ai-kore 的 /api/v1/health 接口，检查 AI 服务与 Milvus 是否可用。"
     )
     public ResponseEntity<?> testAiHealth() {
+        log.info(">>> [接口] GET /api/test/ai-health");
         String url = aiKoreBaseUrl + "/api/v1/health";
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            log.info("<<< [接口] GET /api/test/ai-health success=true");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            log.warn("<<< [接口] GET /api/test/ai-health failed: {}", e.getMessage());
             return ResponseEntity.status(503)
                     .body(Map.of(
                             "error", "Python AI 服务不可达",

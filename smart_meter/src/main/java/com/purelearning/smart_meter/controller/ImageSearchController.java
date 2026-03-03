@@ -5,6 +5,8 @@ import com.purelearning.smart_meter.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +20,8 @@ import java.util.List;
 @RequestMapping("/api/search")
 @Tag(name = "Search - 图搜图", description = "以图搜图，返回相似表情包")
 public class ImageSearchController {
+
+    private static final Logger log = LoggerFactory.getLogger(ImageSearchController.class);
 
     private final SearchService searchService;
 
@@ -33,7 +37,12 @@ public class ImageSearchController {
     public List<SearchResultItem> searchByImage(
             @Parameter(description = "图片文件") @RequestParam("file") MultipartFile file,
             @Parameter(description = "返回数量") @RequestParam(defaultValue = "10") int topK) {
-        return searchService.searchByImage(file, Math.min(Math.max(topK, 1), 100));
+        int k = Math.min(Math.max(topK, 1), 100);
+        log.info(">>> [接口] POST /api/search/image file={} size={} topK={}",
+                file.getOriginalFilename(), file.getSize(), k);
+        List<SearchResultItem> results = searchService.searchByImage(file, k);
+        log.info("<<< [接口] POST /api/search/image count={}", results.size());
+        return results;
     }
 
     @PostMapping("/image/url")
@@ -44,6 +53,10 @@ public class ImageSearchController {
     public List<SearchResultItem> searchByImageUrl(
             @Parameter(description = "图片 URL") @RequestParam String url,
             @Parameter(description = "返回数量") @RequestParam(defaultValue = "10") int topK) {
-        return searchService.searchByImageUrl(url, Math.min(Math.max(topK, 1), 100));
+        int k = Math.min(Math.max(topK, 1), 100);
+        log.info(">>> [接口] POST /api/search/image/url url={} topK={}", url, k);
+        List<SearchResultItem> results = searchService.searchByImageUrl(url, k);
+        log.info("<<< [接口] POST /api/search/image/url count={}", results.size());
+        return results;
     }
 }

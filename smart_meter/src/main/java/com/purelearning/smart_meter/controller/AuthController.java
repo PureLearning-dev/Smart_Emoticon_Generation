@@ -7,6 +7,8 @@ import com.purelearning.smart_meter.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,8 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @Tag(name = "Auth - 登录认证", description = "微信小程序登录与 JWT 令牌相关接口")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
 
@@ -31,8 +35,10 @@ public class AuthController {
                     "根据 openid 查/建用户，并签发 JWT 令牌返回给小程序。"
     )
     public ResponseEntity<?> wechatLogin(@RequestBody WechatLoginRequest request) {
+        log.info(">>> [接口] POST /api/auth/wechat/login code={}", request != null ? request.getCode() : null);
         try {
             WechatLoginResponse resp = authService.wechatLogin(request);
+            log.info("<<< [接口] POST /api/auth/wechat/login userId={} newUser={}", resp.getUser() != null ? resp.getUser().getId() : null, resp.getNewUser());
             return ResponseEntity.ok(resp);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -52,8 +58,10 @@ public class AuthController {
                     "code 可作为开发者标识（如 dev_001），nickname/avatarUrl 可选。生产环境应禁用。"
     )
     public ResponseEntity<?> wechatLoginMock(@RequestBody WechatLoginRequest request) {
+        log.info(">>> [接口] POST /api/auth/wechat/login-mock code={}", request != null ? request.getCode() : null);
         try {
             WechatLoginResponse resp = authService.wechatLoginMock(request);
+            log.info("<<< [接口] POST /api/auth/wechat/login-mock userId={} newUser={}", resp.getUser() != null ? resp.getUser().getId() : null, resp.getNewUser());
             return ResponseEntity.ok(resp);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -70,12 +78,14 @@ public class AuthController {
     public ResponseEntity<?> verify(
             @Parameter(description = "Bearer 令牌，格式：Bearer <token>")
             @RequestHeader(value = "Authorization", required = false) String authorization) {
+        log.info(">>> [接口] GET /api/auth/verify");
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().body(Map.of("error", "Missing Authorization: Bearer <token>"));
         }
         String token = authorization.substring("Bearer ".length()).trim();
         try {
             JwtService.VerifiedJwt verified = authService.verifyToken(token);
+            log.info("<<< [接口] GET /api/auth/verify userId={} ok=true", verified.userId());
             return ResponseEntity.ok(verified);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
