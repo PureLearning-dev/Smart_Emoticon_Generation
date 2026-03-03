@@ -32,7 +32,7 @@ public class AiKoreTestController {
     }
 
     /**
-     * 测试联调：转发请求到 Python 的 /api/search/pictures 接口
+     * 测试联调：转发请求到 Python 的向量搜索接口
      *
      * @param query 搜索关键词
      * @return Python 服务返回的 JSON，或错误信息
@@ -40,15 +40,16 @@ public class AiKoreTestController {
     @GetMapping("/ai-search")
     @Operation(
             summary = "测试搜索联调",
-            description = "将请求转发到 Python ai-kore 的 /api/search/pictures 接口，用于验证 Java ↔ Python 搜索链路是否正常。"
+            description = "将请求转发到 Python ai-kore 的 /api/v1/vector/search-text 接口，用于验证 Java ↔ Python 搜索链路是否正常。"
     )
     public ResponseEntity<?> testAiSearch(
             @Parameter(description = "搜索关键词，将传递给 Python 服务")
             @RequestParam(defaultValue = "test") String query) {
-        String url = aiKoreBaseUrl + "/api/search/pictures?query=" + query;
+        String url = aiKoreBaseUrl + "/api/v1/vector/search-text";
         try {
+            Map<String, Object> request = Map.of("query", query, "top_k", 10);
             @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(503)
@@ -66,10 +67,10 @@ public class AiKoreTestController {
     @GetMapping("/ai-health")
     @Operation(
             summary = "测试 AI 服务连通性",
-            description = "向 ai-kore 发送一个简单的搜索请求（query=ping），用来快速检查 AI 服务是否可用。"
+            description = "调用 ai-kore 的 /api/v1/health 接口，检查 AI 服务与 Milvus 是否可用。"
     )
     public ResponseEntity<?> testAiHealth() {
-        String url = aiKoreBaseUrl + "/api/search/pictures?query=ping";
+        String url = aiKoreBaseUrl + "/api/v1/health";
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restTemplate.getForObject(url, Map.class);

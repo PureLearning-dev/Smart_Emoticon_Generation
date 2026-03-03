@@ -1,5 +1,7 @@
 package com.purelearning.smart_meter.controller;
 
+import com.purelearning.smart_meter.dto.pipeline.PipelineAssetRequest;
+import com.purelearning.smart_meter.dto.pipeline.PipelineAssetResponse;
 import com.purelearning.smart_meter.entity.MemeAsset;
 import com.purelearning.smart_meter.service.MemeAssetService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +20,20 @@ public class MemeAssetController {
 
     public MemeAssetController(MemeAssetService memeAssetService) {
         this.memeAssetService = memeAssetService;
+    }
+
+    /**
+     * 供 ai-kore 管线调用的入库接口。
+     * 管线处理完图片（下载→OSS→CLIP→OCR→Milvus）后，将元数据写入 meme_assets。
+     * 按 embedding_id 去重，避免重复入库。
+     */
+    @PostMapping("/from-pipeline")
+    @Operation(
+            summary = "管线入库",
+            description = "供 ai-kore 调用，将处理后的图片元数据写入 meme_assets。按 embedding_id 去重。"
+    )
+    public PipelineAssetResponse createFromPipeline(@RequestBody PipelineAssetRequest request) {
+        return memeAssetService.createFromPipeline(request);
     }
 
     @GetMapping("/{id}")
