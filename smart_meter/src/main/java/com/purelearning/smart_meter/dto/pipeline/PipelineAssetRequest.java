@@ -7,6 +7,9 @@ package com.purelearning.smart_meter.dto.pipeline;
  * @param fileUrl       OSS 公网 URL，对应 meme_assets.file_url
  * @param ocrText       OCR 识别出的文本
  * @param contentText   用于向量化的统一语义文本，可选，默认用 ocrText 填充
+ * @param title         表情包标题
+ * @param description   图片语义描述信息（可用于 RAG 增强）
+ * @param styleTag      风格标签（如搞笑、情侣、动漫等）
  * @param sourceType    来源类型：1 系统采集底图，2 用户创作成品
  * @param source        图片来源，如 "crawl" 或 URL 来源
  */
@@ -15,6 +18,9 @@ public record PipelineAssetRequest(
         String fileUrl,
         String ocrText,
         String contentText,
+        String title,
+        String description,
+        String styleTag,
         Integer sourceType,
         String source
 ) {

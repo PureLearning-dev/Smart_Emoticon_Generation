@@ -34,6 +34,9 @@ def save_to_mysql(
     ocr_text: str,
     *,
     content_text: Optional[str] = None,
+    title: Optional[str] = None,
+    description: Optional[str] = None,
+    style_tag: Optional[str] = None,
     source_type: int = 1,
     source: str = "crawl",
 ) -> Optional[Dict[str, Any]]:
@@ -45,6 +48,9 @@ def save_to_mysql(
         file_url: OSS 公网 URL
         ocr_text: OCR 识别文本
         content_text: 可选，用于向量化的语义文本，默认用 ocr_text
+        title: 可选，表情包标题
+        description: 可选，图片语义描述信息
+        style_tag: 可选，风格标签（如搞笑、情侣、动漫等）
         source_type: 来源类型，默认 1（系统采集）
         source: 图片来源，默认 "crawl"
 
@@ -57,6 +63,9 @@ def save_to_mysql(
         "fileUrl": file_url,
         "ocrText": ocr_text or "",
         "contentText": content_text if content_text is not None else ocr_text or "",
+        "title": title if title is not None else "",
+        "description": description if description is not None else "",
+        "styleTag": style_tag if style_tag is not None else "",
         "sourceType": source_type,
         "source": source,
     }

@@ -174,6 +174,9 @@ def process_single_image(
                 file_url=image_url,
                 ocr_text=ocr_text,
                 content_text=ocr_text,
+                title="",
+                description="",
+                style_tag="",
                 source_type=1,
                 source=url[:100] if url else "crawl",
             )
