@@ -2,18 +2,17 @@
 单张图片处理管线
 
 职责：
-- 串联完整流程：下载 → 上传 OSS → CLIP 图像向量 → OCR → 文本向量 → 存入 Milvus
+- 串联完整流程：下载 → 上传 OSS → CLIP 图像向量 → OCR（本地 PaddleOCR）→ 存入 Milvus
 - 每处理完一张图片再处理下一张（串行，避免内存与并发问题）
 - 返回结构化 JSON 结果
 
 流程：
-1. 从指定 URL 下载图片
+1. 从指定 URL 下载图片到本地
 2. 上传至阿里云 OSS，获取 image_url
 3. 使用 CLIP 生成图像向量
-4. 使用 OCR 识别图片中的文本
-5. 将 OCR 文本向量化（CLIP 文本编码）
-6. 将 image_vector + text_vector + image_url + ocr_text 存入 Milvus
-7. 返回结构化 JSON
+4. OCR 识别（PaddleOCR 本地，仅支持本地图片；传入缩小后的 bytes 加速识别）
+5. 将 image_vector + image_url + ocr_text 存入 Milvus（单向量字段，文本/图搜共用）
+6. 返回结构化 JSON
 """
 
 import io
@@ -25,11 +24,10 @@ from PIL import Image
 
 from crawler.spider import download_image, generate_embedding_id
 from models.clip import encode_image, get_embedding_dim
-from models.embedding import text_to_vector
 from ocr.engine import recognize_text
 from storage.oss_client import upload_image
 from vector.client import connect, ensure_collection
-from vector.collection import insert_one
+from vector.collection import exists_by_embedding_id, insert_one
 
 try:
     from app.client.smart_meter_client import save_to_mysql
@@ -54,10 +52,9 @@ logger = get_logger(__name__)
 
 def _resize_for_ocr(image_bytes: bytes, max_longest_edge: int) -> bytes:
     """
-    将图片等比缩小至最长边不超过 max_longest_edge，仅用于 OCR 以加速识别。
+    将图片等比缩小至最长边不超过 max_longest_edge，用于加速 OCR。
 
-    保持宽高比，不影响识别率（1024px 足够常见文字识别）。
-    若原图已小于该尺寸则直接返回原字节。
+    保持宽高比，1024px 足够常见文字识别。若原图已小于该尺寸则直接返回。
 
     Args:
         image_bytes: 原始图片二进制
@@ -120,6 +117,7 @@ def process_single_image(
     try:
         # 1. 下载图片
         logger.info("开始下载: %s", url)
+        # data是内存中图片的字节，temp_path是临时文件路径
         data, temp_path = download_image(
             url,
             timeout=timeout,
@@ -139,34 +137,37 @@ def process_single_image(
         image_vector = encode_image(temp_path)
         result["image_vector_dim"] = len(image_vector)
 
-        # 4. OCR（对过大图片等比缩小后再识别，加速 Mac CPU 处理）
-        logger.info("OCR 识别")
+        # 4. OCR 识别（PaddleOCR 本地，仅支持本地图片；传入缩小后的 bytes 加速）
+        logger.info("OCR 识别（PaddleOCR 本地）")
         ocr_data = _resize_for_ocr(data, OCR_MAX_DIMENSION)
         ocr_text = recognize_text(ocr_data)
         result["ocr_text"] = ocr_text
 
-        # 5. 文本向量化
-        logger.info("文本向量化")
-        text_vector = text_to_vector(ocr_text)
-        result["text_vector_dim"] = len(text_vector)
-
-        # 6. 存入 Milvus
+        # 5. 存入 Milvus（同一 URL 已存在则跳过，避免主键冲突）
+        # 注：Milvus 单向量字段，存 image_vector；文本/图搜均在此字段检索（CLIP 语义空间对齐）
         embedding_id = generate_embedding_id(url)
         result["embedding_id"] = embedding_id
 
         connect()
         dim = get_embedding_dim()
         ensure_collection(MILVUS_COLLECTION_NAME, dim)
-        insert_one(
-            embedding_id=embedding_id,
-            image_vector=image_vector,
-            text_vector=text_vector,
-            image_url=image_url,
-            ocr_text=ocr_text,
-        )
-        logger.info("已写入 Milvus: %s", embedding_id)
+        if exists_by_embedding_id(embedding_id):
+            logger.info("embedding_id 已存在，跳过 Milvus 写入: %s", embedding_id)
+        else:
+            insert_one(
+                embedding_id=embedding_id,
+                vector=image_vector,
+                image_url=image_url,
+                ocr_text=ocr_text,
+            )
+            logger.info("已写入 Milvus: %s", embedding_id)
 
         # 7. 写入 MySQL meme_assets（供搜索时查元数据，调用 smart_meter 的 POST /api/meme-assets/from-pipeline）
+        # 简单实现：title 取 OCR 前 30 字，description 用 OCR 全文，style_tag 暂空（后续可升级 LLM）
+        title = (ocr_text[:30] + "…") if len(ocr_text) > 30 else (ocr_text or "未命名")
+        description = ocr_text
+        style_tag = ""
+
         if save_to_mysql:
             logger.info("调用 smart_meter 写入 MySQL")
             save_to_mysql(
@@ -174,9 +175,9 @@ def process_single_image(
                 file_url=image_url,
                 ocr_text=ocr_text,
                 content_text=ocr_text,
-                title="",
-                description="",
-                style_tag="",
+                title=title,
+                description=description,
+                style_tag=style_tag,
                 source_type=1,
                 source=url[:100] if url else "crawl",
             )
