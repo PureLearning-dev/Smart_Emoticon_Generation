@@ -1,0 +1,46 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  background: #f7f8fa;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
+}
+
+.title {
+  display: block;
+  font-size: 36rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.version {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.paragraph {
+  display: block;
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.links {
+  margin-top: 32rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid #f0f2f5;
+}
+
+.link-label {
+  font-size: 24rpx;
+  color: #999999;
+}

@@ -1,0 +1,21 @@
+<view class="page">
+  <view class="card">
+    <text class="title">常见问题</text>
+    <view class="faq-item">
+      <text class="faq-q">Q：如何搜索表情包？</text>
+      <text class="faq-a">在首页点击「文本搜索」输入关键词，或使用「图搜图」上传图片进行相似检索。</text>
+    </view>
+    <view class="faq-item">
+      <text class="faq-q">Q：首页推荐内容从哪里来？</text>
+      <text class="faq-a">推荐内容为平台精选文章，支持分页「加载更多」浏览。</text>
+    </view>
+    <view class="faq-item">
+      <text class="faq-q">Q：我的生成是什么？</text>
+      <text class="faq-a">登录后可在「我的生成」中查看您生成或保存的表情记录。</text>
+    </view>
+    <view class="faq-item">
+      <text class="faq-q">Q：如何清除缓存？</text>
+      <text class="faq-a">在个人中心点击「清除缓存」即可清理本地数据，释放空间。清除后需重新登录。</text>
+    </view>
+  </view>
+</view>

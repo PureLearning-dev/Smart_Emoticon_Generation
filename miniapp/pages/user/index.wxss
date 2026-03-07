@@ -22,9 +22,9 @@
 }
 
 .subtitle {
-  margin-top: 20rpx;
+  margin-top: 8rpx;
   display: block;
-  font-size: 30rpx;
+  font-size: 24rpx;
   color: #666666;
 }
 
@@ -51,10 +51,19 @@
   align-items: center;
   justify-content: center;
   font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .profile-info {
   flex: 1;
+  min-width: 0;
 }
 
 .name {
@@ -65,7 +74,7 @@
 }
 
 .helper {
-  margin-top: 20rpx;
+  margin-top: 6rpx;
   display: block;
   font-size: 24rpx;
   color: #999999;
@@ -76,6 +85,7 @@
   border-radius: 999rpx;
   padding: 8rpx 14rpx;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status-chip-online {
@@ -88,40 +98,11 @@
   background: #eef1f5;
 }
 
-.action-card {
-  padding-top: 24rpx;
-}
-
-.action-item {
-  padding: 20rpx 0;
-}
-
-.action-text {
-  margin-bottom: 20rpx;
-}
-
-.action-title {
-  display: block;
-  color: #333333;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.action-desc {
+.auth-actions {
   margin-top: 20rpx;
-  display: block;
-  color: #999999;
-  font-size: 24rpx;
-}
-
-.divider {
-  height: 2rpx;
-  background: #f0f2f5;
-  margin: 20rpx 0;
 }
 
 .primary-btn,
-.ghost-btn,
 .danger-btn {
   height: 80rpx;
   border-radius: 16rpx;
@@ -139,15 +120,66 @@
   color: #ffffff;
 }
 
-.ghost-btn {
-  background: rgba(7, 193, 96, 0.12);
-  color: #07c160;
-}
-
 .danger-btn {
-  margin-top: 20rpx;
   background: rgba(238, 10, 36, 0.12);
   color: #ee0a24;
+}
+
+/* 功能列表卡片 */
+.list-card {
+  padding: 0 24rpx;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  min-height: 100rpx;
+  box-sizing: border-box;
+}
+
+.list-item-hover {
+  opacity: 0.85;
+}
+
+.list-item-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item-title {
+  display: block;
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.list-item-desc {
+  margin-top: 6rpx;
+  display: block;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.list-item-arrow {
+  font-size: 36rpx;
+  color: #999999;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.list-divider {
+  height: 2rpx;
+  background: #f0f2f5;
+  margin: 0;
+}
+
+.footer-text {
+  margin-top: 16rpx;
+  text-align: center;
+  font-size: 24rpx;
+  color: #999999;
 }
 
 button::after {

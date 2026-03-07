@@ -6,7 +6,11 @@
     "pages/user/index",
     "pages/login/index",
     "pages/plaza/index",
-    "pages/my-creation/index"
+    "pages/my-creation/index",
+    "pages/user/disclaimer",
+    "pages/user/favorites",
+    "pages/user/about",
+    "pages/user/help"
   ],
   "window": {
     "navigationBarTitleText": "智能表情包中心",

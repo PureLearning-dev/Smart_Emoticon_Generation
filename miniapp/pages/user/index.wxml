@@ -3,35 +3,109 @@
     <text class="title">个人中心</text>
     <text class="subtitle">统一管理登录态和账号安全</text>
     <view class="profile-shell">
-      <view class="avatar">👤</view>
+      <image
+        wx:if="{{user && user.avatarUrl}}"
+        class="avatar-img"
+        src="{{user.avatarUrl}}"
+        mode="aspectFill"
+      />
+      <view wx:else class="avatar">👤</view>
       <view class="profile-info">
-        <text class="name">{{user ? (user.nickname || '微信用户') : '未登录用户'}}</text>
-        <text class="helper">{{user ? (user.openid || '无 openid') : '点击下方按钮去登录'}}</text>
+        <text class="name">{{user ? (user.nickname || '微信用户') : '未登录'}}</text>
+        <text class="helper">{{user ? '已登录' : '点击下方按钮去登录'}}</text>
       </view>
       <view class="status-chip {{token ? 'status-chip-online' : 'status-chip-offline'}}">
         {{token ? '已登录' : '未登录'}}
       </view>
     </view>
+    <view class="auth-actions">
+      <button
+        wx:if="{{!token}}"
+        type="default"
+        class="primary-btn"
+        bindtap="goLogin"
+      >去登录</button>
+      <button
+        wx:else
+        type="default"
+        class="danger-btn"
+        bindtap="logout"
+      >退出登录</button>
+    </view>
   </view>
 
-  <view class="card action-card">
-    <view class="action-item">
-      <view class="action-text">
-        <text class="action-title">账号登录</text>
-        <text class="action-desc">微信授权或开发环境 Mock 登录</text>
+  <view class="card list-card">
+    <view
+      class="list-item"
+      hover-class="list-item-hover"
+      bindtap="goMyCreation"
+    >
+      <view class="list-item-left">
+        <text class="list-item-title">我的生成</text>
+        <text class="list-item-desc">查看我生成的表情</text>
       </view>
-      <button class="primary-btn" bindtap="goLogin">去登录</button>
+      <text class="list-item-arrow">›</text>
     </view>
-
-    <view class="action-item">
-      <view class="action-text">
-        <text class="action-title">登录状态校验</text>
-        <text class="action-desc">验证当前 token 是否仍然有效</text>
+    <view class="list-divider"></view>
+    <view
+      class="list-item"
+      hover-class="list-item-hover"
+      bindtap="clearCache"
+    >
+      <view class="list-item-left">
+        <text class="list-item-title">清除缓存</text>
+        <text class="list-item-desc">清理本地缓存，释放空间</text>
       </view>
-      <button class="ghost-btn" bindtap="verifyToken">校验 Token</button>
+      <text class="list-item-arrow">›</text>
     </view>
-
-    <view class="divider"></view>
-    <button class="danger-btn" bindtap="logout">退出登录</button>
+    <view class="list-divider"></view>
+    <view
+      class="list-item"
+      hover-class="list-item-hover"
+      bindtap="goDisclaimer"
+    >
+      <view class="list-item-left">
+        <text class="list-item-title">免责声明</text>
+      </view>
+      <text class="list-item-arrow">›</text>
+    </view>
+    <view class="list-divider"></view>
+    <view
+      class="list-item"
+      hover-class="list-item-hover"
+      bindtap="goFavorites"
+    >
+      <view class="list-item-left">
+        <text class="list-item-title">我的收藏</text>
+        <text class="list-item-desc">收藏的文章与表情</text>
+      </view>
+      <text class="list-item-arrow">›</text>
+    </view>
+    <view class="list-divider"></view>
+    <view
+      class="list-item"
+      hover-class="list-item-hover"
+      bindtap="goAbout"
+    >
+      <view class="list-item-left">
+        <text class="list-item-title">关于我们</text>
+        <text class="list-item-desc">版本与介绍</text>
+      </view>
+      <text class="list-item-arrow">›</text>
+    </view>
+    <view class="list-divider"></view>
+    <view
+      class="list-item"
+      hover-class="list-item-hover"
+      bindtap="goHelp"
+    >
+      <view class="list-item-left">
+        <text class="list-item-title">帮助</text>
+        <text class="list-item-desc">常见问题与使用说明</text>
+      </view>
+      <text class="list-item-arrow">›</text>
+    </view>
   </view>
+
+  <view class="footer-text">智能表情包中心 · 敬请使用</view>
 </view>

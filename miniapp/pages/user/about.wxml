@@ -1,0 +1,10 @@
+<view class="page">
+  <view class="card">
+    <text class="title">{{appName}}</text>
+    <text class="version">版本 {{version}}</text>
+    <text class="paragraph">智能表情包中心是一款基于关键词与图片检索的表情包发现与生成工具，支持文本搜图、图搜图及首页文章推荐，方便您快速找到或生成所需表情。</text>
+    <view class="links">
+      <text class="link-label">用户协议与隐私政策敬请留意后续更新。</text>
+    </view>
+  </view>
+</view>

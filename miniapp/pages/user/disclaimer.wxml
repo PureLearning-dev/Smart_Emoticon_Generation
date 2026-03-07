@@ -1,0 +1,9 @@
+<view class="page">
+  <view class="card">
+    <text class="title">免责声明</text>
+    <text class="paragraph">1. 本小程序所提供的内容（包括但不限于表情包、文章、图片等）仅供学习与娱乐使用，请勿用于商业目的或侵犯他人权益。</text>
+    <text class="paragraph">2. 用户在本小程序内生成、上传或传播的内容，由用户自行承担责任；如涉及侵权或违规，本平台有权删除并配合处理。</text>
+    <text class="paragraph">3. 本小程序尽可能保证服务稳定与内容准确，但不对因网络、系统故障或第三方原因导致的数据丢失、错误等承担责任。</text>
+    <text class="paragraph">4. 使用本小程序即表示您已阅读并同意本声明；如有疑问，请通过「关于我们」或「帮助」中的方式联系我们。</text>
+  </view>
+</view>
