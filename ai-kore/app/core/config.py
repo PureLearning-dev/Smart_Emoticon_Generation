@@ -49,9 +49,10 @@ CLIP_PRETRAINED = _get("CLIP_PRETRAINED", "openai")  # openai / laion2b 等
 CLIP_DEVICE = _get("CLIP_DEVICE", "cpu")  # cpu / cuda
 
 # ======================== OCR 配置 ========================
+# PaddleOCR 本地识别，仅支持本地图片（Path/bytes），不支持 URL
 OCR_USE_ANGLE_CLS = _get("OCR_USE_ANGLE_CLS", "true").lower() in ("true", "1", "yes")
 OCR_LANG = _get("OCR_LANG", "ch")  # ch / en
-# OCR 前图片最长边上限（像素），超过则等比缩小，避免过大图在 CPU 上识别过慢；1024 可兼顾速度与识别率
+# OCR 前图片最长边上限（像素），超过则等比缩小，加速 Mac CPU 识别；1024 兼顾速度与识别率
 OCR_MAX_DIMENSION = _get_int("OCR_MAX_DIMENSION", 1024)
 
 # ======================== smart_meter 配置 ========================
