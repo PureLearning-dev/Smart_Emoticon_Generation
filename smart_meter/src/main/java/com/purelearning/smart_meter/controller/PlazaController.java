@@ -42,9 +42,10 @@ public class PlazaController {
             description = "返回首页推荐文章列表。当前仅返回 plaza_contents 中 content_type=2 的已发布文章，并按 sort_order、create_time 排序。"
     )
     public List<PlazaContentListItem> listRecommendations(
-            @Parameter(description = "返回条数，默认 6") @RequestParam(defaultValue = "6") int limit) {
-        log.info(">>> [接口] GET /api/plaza/recommendations limit={}", limit);
-        List<PlazaContentListItem> items = plazaService.listRecommendations(limit);
+            @Parameter(description = "返回条数，默认 6") @RequestParam(defaultValue = "6") int limit,
+            @Parameter(description = "偏移量，默认 0") @RequestParam(defaultValue = "0") int offset) {
+        log.info(">>> [接口] GET /api/plaza/recommendations limit={} offset={}", limit, offset);
+        List<PlazaContentListItem> items = plazaService.listRecommendations(limit, offset);
         log.info("<<< [接口] GET /api/plaza/recommendations count={}", items.size());
         return items;
     }

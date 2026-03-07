@@ -1,0 +1,282 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  background: #f7f8fa;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+
+.title {
+  font-size: 36rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.tag {
+  font-size: 24rpx;
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.1);
+  border-radius: 999rpx;
+  padding: 6rpx 16rpx;
+}
+
+.subtitle {
+  margin-top: 20rpx;
+  font-size: 30rpx;
+  color: #666666;
+}
+
+.hero-actions {
+  margin-top: 20rpx;
+  display: flex;
+  gap: 20rpx;
+}
+
+.hero-primary-btn,
+.hero-ghost-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.hero-primary-btn {
+  background: #07c160;
+  color: #ffffff;
+}
+
+.hero-ghost-btn {
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.section-desc {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+}
+
+.entry-item {
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  border: 2rpx solid #eef1f5;
+  padding: 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+}
+
+.entry-icon {
+  font-size: 32rpx;
+}
+
+.entry-name {
+  font-size: 26rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.entry-desc {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.entry-item::after {
+  content: "";
+  width: 40rpx;
+  height: 4rpx;
+  border-radius: 999rpx;
+  background: rgba(7, 193, 96, 0.2);
+}
+
+.entry-item:active {
+  transform: translateY(1rpx);
+}
+
+.quick-entry .section-head {
+  margin-bottom: 20rpx;
+}
+
+.quick-entry .section-title {
+  font-size: 30rpx;
+}
+
+.quick-entry .section-desc {
+  font-size: 24rpx;
+}
+
+.section-desc {
+  color: #666666;
+}
+
+.recommend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.recommend-item {
+  border: 2rpx solid #edf1f5;
+  border-radius: 16rpx;
+  background: #ffffff;
+  padding: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.recommend-cover {
+  width: 100%;
+  height: 280rpx;
+  border-radius: 16rpx;
+  display: block;
+  background: #f2f4f7;
+}
+
+.recommend-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.recommend-title {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.recommend-tag {
+  font-size: 22rpx;
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.12);
+  border-radius: 999rpx;
+  padding: 8rpx 14rpx;
+}
+
+.recommend-summary {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.recommend-action {
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: rgba(7, 193, 96, 0.1);
+  color: #07c160;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recommend-state {
+  border: 2rpx solid #edf1f5;
+  border-radius: 16rpx;
+  background: #ffffff;
+  padding: 32rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.recommend-state-text {
+  font-size: 24rpx;
+  color: #999999;
+  text-align: center;
+}
+
+.recommend-retry-btn {
+  width: 240rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
+  font-size: 26rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.recommend-more {
+  margin-top: 24rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80rpx;
+}
+
+.recommend-more-btn {
+  width: 240rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
+  font-size: 26rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.recommend-more-loading {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.recommend-more-done {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+button::after {
+  border: none;
+}

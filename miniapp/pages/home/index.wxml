@@ -1,0 +1,94 @@
+<view class="page">
+  <view class="page-header card">
+    <view class="title-row">
+      <text class="title">智能表情包中心</text>
+      <text class="tag">Beta</text>
+    </view>
+    <text class="subtitle"></text>
+    <view class="hero-actions">
+      <button class="hero-primary-btn" bindtap="goSearchText">文本搜索</button>
+      <button class="hero-ghost-btn" bindtap="goSearchImage">图搜图</button>
+    </view>
+  </view>
+
+  <view class="quick-entry card">
+    <view class="section-head">
+      <text class="section-title">功能入口</text>
+      <text class="section-desc">保持简洁高效</text>
+    </view>
+    <view class="entry-grid">
+      <view class="entry-item" bindtap="goSearchText">
+        <view class="entry-icon">🔎</view>
+        <text class="entry-name">文本搜图</text>
+        <text class="entry-desc">按关键词找图</text>
+      </view>
+      <view class="entry-item" bindtap="goSearchImage">
+        <view class="entry-icon">🖼️</view>
+        <text class="entry-name">图搜图</text>
+        <text class="entry-desc">相似图片检索</text>
+      </view>
+      <view class="entry-item" bindtap="goLoginPage">
+        <view class="entry-icon">🔐</view>
+        <text class="entry-name">账号登录</text>
+        <text class="entry-desc">管理登录状态</text>
+      </view>
+      <view class="entry-item" bindtap="goUserPage">
+        <view class="entry-icon">👤</view>
+        <text class="entry-name">个人中心</text>
+        <text class="entry-desc">查看账号信息</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="recommend-card card">
+    <view class="section-head">
+      <text class="section-title">推荐内容</text>
+      <text class="section-desc">首页文章推荐</text>
+    </view>
+
+    <view wx:if="{{recommendLoading}}" class="recommend-state">推荐内容加载中...</view>
+
+    <view wx:elif="{{recommendError}}" class="recommend-state">
+      <text class="recommend-state-text">推荐内容加载失败，请稍后重试</text>
+      <button class="recommend-retry-btn" bindtap="retryRecommendations">重新加载</button>
+    </view>
+
+    <view wx:elif="{{!recommendList.length}}" class="recommend-state">
+      <text class="recommend-state-text">暂无推荐文章</text>
+    </view>
+
+    <view wx:else>
+      <view class="recommend-list">
+        <view
+          class="recommend-item"
+          wx:for="{{recommendList}}"
+          wx:key="id"
+          data-item="{{item}}"
+          bindtap="onTapRecommend"
+        >
+          <image
+            wx:if="{{item.coverUrl}}"
+            class="recommend-cover"
+            src="{{item.coverUrl}}"
+            mode="aspectFill"
+          />
+          <view class="recommend-top">
+            <text class="recommend-title">{{item.title}}</text>
+            <text class="recommend-tag">{{item.tag}}</text>
+          </view>
+          <text class="recommend-summary">{{item.summary}}</text>
+          <view class="recommend-action">{{item.actionText}}</view>
+        </view>
+      </view>
+      <view class="recommend-more">
+        <button
+          wx:if="{{hasMore && !recommendLoadingMore}}"
+          class="recommend-more-btn"
+          bindtap="loadMoreRecommendations"
+        >加载更多</button>
+        <text wx:elif="{{recommendLoadingMore}}" class="recommend-more-loading">加载中…</text>
+        <text wx:elif="{{!hasMore && recommendList.length}}" class="recommend-more-done">没有更多了</text>
+      </view>
+    </view>
+  </view>
+</view>

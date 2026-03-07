@@ -35,10 +35,11 @@ public class PlazaServiceImpl extends ServiceImpl<PlazaContentMapper, PlazaConte
     }
 
     @Override
-    public List<PlazaContentListItem> listRecommendations(int limit) {
+    public List<PlazaContentListItem> listRecommendations(int limit, int offset) {
         int size = normalizeLimit(limit, DEFAULT_HOME_LIMIT);
-        log.info(">>> [核心] PlazaService.listRecommendations limit={}", size);
-        List<PlazaContentListItem> items = listRecommendedArticleItems(size);
+        int safeOffset = Math.max(0, offset);
+        log.info(">>> [核心] PlazaService.listRecommendations limit={} offset={}", size, safeOffset);
+        List<PlazaContentListItem> items = listRecommendedArticleItems(size, safeOffset);
         log.info("<<< [核心] PlazaService.listRecommendations count={}", items.size());
         return items;
     }
@@ -90,16 +91,17 @@ public class PlazaServiceImpl extends ServiceImpl<PlazaContentMapper, PlazaConte
     /**
      * 查询首页推荐文章列表，并转换成前端直接可用的轻量 DTO。
      *
-     * @param limit 返回条数
+     * @param limit  返回条数
+     * @param offset 偏移量
      * @return 轻量列表数据
      */
-    private List<PlazaContentListItem> listRecommendedArticleItems(int limit) {
+    private List<PlazaContentListItem> listRecommendedArticleItems(int limit, int offset) {
         return lambdaQuery()
                 .eq(PlazaContent::getStatus, 1)
                 .eq(PlazaContent::getContentType, 2)
                 .orderByDesc(PlazaContent::getSortOrder)
                 .orderByDesc(PlazaContent::getCreateTime)
-                .last("LIMIT " + limit)
+                .last("LIMIT " + limit + " OFFSET " + offset)
                 .list()
                 .stream()
                 .map(this::toListItem)

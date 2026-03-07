@@ -17,10 +17,11 @@ public interface PlazaService extends IService<PlazaContent> {
      * 查询首页推荐文章列表。
      * 当前直接复用 plaza_contents + plaza_articles 作为首页文章推荐数据源。
      *
-     * @param limit 返回条数
+     * @param limit  返回条数
+     * @param offset 偏移量，用于分页
      * @return 推荐内容列表
      */
-    List<PlazaContentListItem> listRecommendations(int limit);
+    List<PlazaContentListItem> listRecommendations(int limit, int offset);
 
     /**
      * 查询单条首页推荐文章详情。
