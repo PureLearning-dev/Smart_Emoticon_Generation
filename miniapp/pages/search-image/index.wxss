@@ -1,0 +1,177 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  background: #f7f8fa;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
+}
+
+.title {
+  font-size: 36rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin-top: 8rpx;
+  display: block;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.upload-panel {
+  margin-top: 20rpx;
+}
+
+.choose-area {
+  border-radius: 16rpx;
+  background: #f7f8fa;
+  border: 2rpx dashed #e0e4e8;
+  padding: 48rpx 24rpx;
+  text-align: center;
+}
+
+.choose-icon {
+  font-size: 64rpx;
+  display: block;
+  margin-bottom: 16rpx;
+}
+
+.choose-tip {
+  display: block;
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.choose-desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.preview-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  padding: 20rpx 0;
+}
+
+.preview-img {
+  width: 320rpx;
+  height: 320rpx;
+  border-radius: 16rpx;
+  background: #f2f4f7;
+}
+
+.ghost-btn {
+  width: 200rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
+  font-size: 26rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.primary-btn {
+  margin-top: 20rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: #07c160;
+  color: #ffffff;
+  font-size: 28rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.section-title {
+  font-size: 30rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.section-desc {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.state-wrap {
+  padding: 32rpx 0;
+  text-align: center;
+}
+
+.state-text {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.state-error {
+  color: #ee0a24;
+}
+
+.list {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.list-item {
+  border-radius: 16rpx;
+  border: 2rpx solid #f0f2f5;
+  background: #ffffff;
+  padding: 20rpx;
+}
+
+.cover {
+  width: 100%;
+  height: 260rpx;
+  border-radius: 16rpx;
+  display: block;
+}
+
+.item-content {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.item-title {
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.item-text {
+  font-size: 24rpx;
+  color: #666666;
+}
+
+button::after {
+  border: none;
+}

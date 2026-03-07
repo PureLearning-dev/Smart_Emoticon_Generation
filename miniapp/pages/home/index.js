@@ -16,6 +16,7 @@ Page({
   },
 
   onLoad() {
+    console.log("[home] onLoad");
     this.loadRecommendations();
   },
 
@@ -118,7 +119,7 @@ Page({
    */
   goSearchText() {
     wx.navigateTo({
-      url: "/pages/search/index?mode=text"
+      url: "/pages/search-text/index"
     });
   },
 
@@ -127,7 +128,7 @@ Page({
    */
   goSearchImage() {
     wx.navigateTo({
-      url: "/pages/search/index?mode=image"
+      url: "/pages/search-image/index"
     });
   },
 

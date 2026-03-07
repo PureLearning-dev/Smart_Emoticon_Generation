@@ -2,6 +2,8 @@
   "pages": [
     "pages/home/index",
     "pages/search/index",
+    "pages/search-text/index",
+    "pages/search-image/index",
     "pages/detail/index",
     "pages/user/index",
     "pages/login/index",

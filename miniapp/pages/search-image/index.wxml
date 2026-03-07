@@ -1,0 +1,56 @@
+<view class="page">
+  <view class="card head-card">
+    <text class="title">图搜图</text>
+    <text class="subtitle">选择一张图片，查找相似表情包</text>
+    <view class="upload-panel">
+      <view wx:if="{{!imagePath}}" class="choose-area" bindtap="chooseImage">
+        <text class="choose-icon">🖼️</text>
+        <text class="choose-tip">点击选择图片</text>
+        <text class="choose-desc">从相册或相机选择</text>
+      </view>
+      <view wx:else class="preview-area">
+        <image class="preview-img" src="{{imagePath}}" mode="aspectFill" />
+        <button type="default" class="ghost-btn" bindtap="chooseImage">重新选择</button>
+      </view>
+      <button type="default" class="primary-btn" bindtap="onSearch">开始搜图</button>
+    </view>
+  </view>
+
+  <view class="card result-card">
+    <view class="section-head">
+      <text class="section-title">搜索结果</text>
+      <text class="section-desc" wx:if="{{hasSearched && !loading}}">{{results.length}} 条</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="state-wrap">
+      <text class="state-text">加载中...</text>
+    </view>
+    <view wx:elif="{{error}}" class="state-wrap">
+      <text class="state-text state-error">加载失败，请重试</text>
+    </view>
+    <view wx:elif="{{hasSearched && results.length === 0}}" class="state-wrap">
+      <text class="state-text">暂无结果，试试其他图片</text>
+    </view>
+    <view wx:elif="{{results.length > 0}}" class="list">
+      <view
+        class="list-item"
+        wx:for="{{results}}"
+        wx:key="index"
+        data-id="{{item.id}}"
+        data-file-url="{{item.fileUrl}}"
+        data-ocr-text="{{item.ocrText}}"
+        bindtap="goDetail"
+      >
+        <image
+          class="cover"
+          src="{{item.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
+          mode="aspectFill"
+        />
+        <view class="item-content">
+          <text class="item-title">ID: {{item.id || '--'}}  相似度: {{item.score}}</text>
+          <text class="item-text">{{item.ocrText || '暂无 OCR 文本'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
