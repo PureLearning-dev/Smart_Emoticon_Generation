@@ -134,6 +134,10 @@
   transform: translateY(1rpx);
 }
 
+.entry-item-hover {
+  opacity: 0.85;
+}
+
 .quick-entry .section-head {
   margin-bottom: 20rpx;
 }
@@ -164,6 +168,10 @@
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+}
+
+.recommend-item-hover {
+  opacity: 0.9;
 }
 
 .recommend-cover {

@@ -6,8 +6,8 @@
     </view>
     <text class="subtitle"></text>
     <view class="hero-actions">
-      <button class="hero-primary-btn" bindtap="goSearchText">文本搜索</button>
-      <button class="hero-ghost-btn" bindtap="goSearchImage">图搜图</button>
+      <button type="default" class="hero-primary-btn" bindtap="goSearchText">文本搜索</button>
+      <button type="default" class="hero-ghost-btn" bindtap="goSearchImage">图搜图</button>
     </view>
   </view>
 
@@ -17,22 +17,32 @@
       <text class="section-desc">保持简洁高效</text>
     </view>
     <view class="entry-grid">
-      <view class="entry-item" bindtap="goSearchText">
+      <view class="entry-item" hover-class="entry-item-hover" bindtap="goSearchText">
         <view class="entry-icon">🔎</view>
         <text class="entry-name">文本搜图</text>
         <text class="entry-desc">按关键词找图</text>
       </view>
-      <view class="entry-item" bindtap="goSearchImage">
+      <view class="entry-item" hover-class="entry-item-hover" bindtap="goSearchImage">
         <view class="entry-icon">🖼️</view>
         <text class="entry-name">图搜图</text>
         <text class="entry-desc">相似图片检索</text>
       </view>
-      <view class="entry-item" bindtap="goLoginPage">
+      <view class="entry-item" hover-class="entry-item-hover" bindtap="goPlazaPage">
+        <view class="entry-icon">🏟️</view>
+        <text class="entry-name">公共广场</text>
+        <text class="entry-desc">浏览广场内容</text>
+      </view>
+      <view class="entry-item" hover-class="entry-item-hover" bindtap="goMyCreationPage">
+        <view class="entry-icon">✨</view>
+        <text class="entry-name">生成图片</text>
+        <text class="entry-desc">创作与生成</text>
+      </view>
+      <view class="entry-item" hover-class="entry-item-hover" bindtap="goLoginPage">
         <view class="entry-icon">🔐</view>
         <text class="entry-name">账号登录</text>
         <text class="entry-desc">管理登录状态</text>
       </view>
-      <view class="entry-item" bindtap="goUserPage">
+      <view class="entry-item" hover-class="entry-item-hover" bindtap="goUserPage">
         <view class="entry-icon">👤</view>
         <text class="entry-name">个人中心</text>
         <text class="entry-desc">查看账号信息</text>
@@ -50,7 +60,7 @@
 
     <view wx:elif="{{recommendError}}" class="recommend-state">
       <text class="recommend-state-text">推荐内容加载失败，请稍后重试</text>
-      <button class="recommend-retry-btn" bindtap="retryRecommendations">重新加载</button>
+      <button type="default" class="recommend-retry-btn" bindtap="retryRecommendations">重新加载</button>
     </view>
 
     <view wx:elif="{{!recommendList.length}}" class="recommend-state">
@@ -64,6 +74,7 @@
           wx:for="{{recommendList}}"
           wx:key="id"
           data-item="{{item}}"
+          hover-class="recommend-item-hover"
           bindtap="onTapRecommend"
         >
           <image
@@ -83,6 +94,7 @@
       <view class="recommend-more">
         <button
           wx:if="{{hasMore && !recommendLoadingMore}}"
+          type="default"
           class="recommend-more-btn"
           bindtap="loadMoreRecommendations"
         >加载更多</button>
