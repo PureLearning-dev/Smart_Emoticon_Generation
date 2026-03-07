@@ -136,6 +136,33 @@
 - 当前阶段先不要接入公共广场页，先保证首页文章推荐链路稳定
 - 当前如仅插入文章型内容，则前端无需依赖 `meme_assets` 即可完成首页文章推荐演示
 
+### 5.5 已完成小程序首页接入（miniapp）
+
+当前已在 `miniapp` 中完成首页文章推荐的最小可用接入，具体如下：
+
+- `config/api.js`
+  - 新增首页文章推荐接口地址配置
+- `services/plaza.js`
+  - 新增首页推荐列表与详情请求封装
+- `pages/home/index.js`
+  - 页面加载时请求首页推荐文章列表
+  - 将原静态推荐数据替换为真实接口数据
+  - 增加 `loading / empty / error` 三种状态
+- `pages/home/index.wxml`
+  - 推荐区改为真实数据渲染
+  - 展示封面图、标题、摘要、标签
+- `pages/detail/*`
+  - 在现有详情页基础上做最小改造
+  - 支持通过 `type=article` 展示文章详情模式
+  - 支持展示正文、作者、来源、发布时间、阅读量、点赞数
+
+当前首页推荐链路如下：
+
+1. 首页加载 -> 调用 `GET /api/plaza/recommendations`
+2. 用户点击文章卡片 -> 跳转 `/pages/detail/index?id=xxx&type=article`
+3. 详情页加载 -> 调用 `GET /api/plaza/recommendations/{id}`
+4. 前端展示完整文章详情
+
 ## 6. 后续待完成接口
 
 - `GET /api/plaza/contents`：公共广场列表（后续再开放）

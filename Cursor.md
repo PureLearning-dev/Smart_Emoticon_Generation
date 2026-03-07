@@ -9,6 +9,7 @@ SMART_METER_CONDITION/
 |
 ├── ai-kore/                # Python项目根目录
 ├── smart_meter/            # SpringBoot项目根目录
+├── miniapp/                # 微信小程序前端
 ├── SQL/                    # 项目SQL代码目录
 ├── Cursor.md               # 项目详细结构说明和功能分配     
 ├── TODO.md                 # 项目的详细任务列表                 
@@ -268,3 +269,31 @@ smart_meter/                                    # Spring Boot 主业务微服务
 ├── pom.xml                                     # 依赖：spring-boot-starter-web、mybatis-plus、mysql、milvus-sdk-java 等
 └── mvnw / .mvn/                                # Maven 包装脚本
 ```
+
+---
+
+## 经验与注意事项
+
+### OpenCLIP 文本编码
+
+- `open_clip.create_model_and_transforms()` 返回 `(model, preprocess_train, preprocess_val)`，三者均为模型与**图像**预处理，**不包含**文本 tokenizer。
+- 文本向量化需单独调用 `open_clip.get_tokenizer(model_name)` 获取 tokenizer，再对文本做 `tokenizer([text])` 得到 token 张量，传入 `model.encode_text()`。
+
+### Milvus 向量字段
+
+- Milvus 不支持单 collection 内多个向量字段（`multiple vector fields is not supported`）。
+- 使用 CLIP 时，图像与文本在同一语义空间，可只存一个 `vector` 字段（存图像向量），文本搜索与图搜均在此字段检索。
+
+### OCR 实现说明
+
+- **仅支持本地图片**：Path、str（本地路径）、bytes；不支持 URL，需先下载到本地再传入。
+- **单例模式**：PaddleOCR 模型仅加载一次，首次调用或 `init_ocr()` 时加载，后续复用。
+- **预加载**：FastAPI 启动时通过 lifespan 调用 `init_ocr()`，避免首次请求延迟。
+- **管线**：下载 → 本地文件 → 缩小（OCR_MAX_DIMENSION）→ `recognize_text(bytes)`。
+
+### 微信小程序 miniapp
+
+- **风格**：小红书风格，主色 `#FE2C55`，卡片圆角 16rpx，背景 `#F7F8FA`。
+- **TabBar 图标**：优先使用第三方图标（如 iconfont.cn 下载 81×81 PNG），不要自行生成；可用 `sips -z 81 81 xxx.png` 缩放。
+- **不要使用 van-pull-refresh**：真机可能报错，推荐页用原生 `enablePullDownRefresh`。
+- **401 处理**：request.js 已统一处理，未登录时 toast 并跳转用户页。
