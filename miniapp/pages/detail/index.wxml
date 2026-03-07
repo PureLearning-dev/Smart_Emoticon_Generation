@@ -1,0 +1,63 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="card state-text">详情加载中...</view>
+
+  <view wx:elif="{{!detail}}" class="card state-text">暂无详情数据</view>
+
+  <view wx:else>
+    <view class="card">
+      <text class="title">{{detail.title || (type === 'article' ? '文章详情' : '表情包详情')}}</text>
+      <text class="subtitle">{{type === 'article' ? '文章 ID' : '素材 ID'}}：{{id || detail.id || '--'}}</text>
+      <image
+        class="cover"
+        src="{{detail.coverUrl || detail.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
+        mode="aspectFill"
+      />
+    </view>
+
+    <view wx:if="{{type === 'article'}}" class="card">
+      <view class="section-head">
+        <text class="section-title">文章摘要</text>
+      </view>
+      <text class="helper">{{detail.summary || '暂无摘要内容'}}</text>
+      <view class="tag-row">
+        <text class="article-tag">{{detail.tagName || '文章'}}</text>
+        <text class="meta-text">发布时间：{{detail.article && detail.article.publishTime || '--'}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{type === 'article'}}" class="card">
+      <view class="section-head">
+        <text class="section-title">正文内容</text>
+      </view>
+      <text class="text-content">{{detail.article && detail.article.contentBody || '暂无正文内容'}}</text>
+      <button class="primary-btn" bindtap="copyOcrText">复制正文内容</button>
+    </view>
+
+    <view wx:if="{{type === 'article'}}" class="card">
+      <view class="section-head">
+        <text class="section-title">文章信息</text>
+      </view>
+      <text class="helper">作者：{{detail.article && detail.article.authorName || '未知作者'}}</text>
+      <text class="helper">来源：{{detail.article && detail.article.sourceName || '未知来源'}}</text>
+      <text class="helper">阅读：{{detail.article && detail.article.readCount || 0}}　点赞：{{detail.article && detail.article.likeCount || 0}}</text>
+      <text class="helper">链接：{{detail.article && detail.article.sourceUrl || detail.articleUrl || '暂无来源链接'}}</text>
+      <button class="ghost-btn" bindtap="goBack">返回上一页</button>
+    </view>
+
+    <view wx:else class="card">
+      <view class="section-head">
+        <text class="section-title">OCR 文本</text>
+      </view>
+      <text class="text-content">{{detail.ocrText || '暂无 OCR 文本'}}</text>
+      <button class="primary-btn" bindtap="copyOcrText">复制 OCR 文本</button>
+    </view>
+
+    <view class="card">
+      <view class="section-head">
+        <text class="section-title">描述信息</text>
+      </view>
+      <text class="helper">{{detail.description || '暂无描述信息'}}</text>
+      <button class="ghost-btn" bindtap="goBack">返回上一页</button>
+    </view>
+  </view>
+</view>

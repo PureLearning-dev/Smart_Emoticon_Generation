@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="card hero-card">
+    <text class="title">个人中心</text>
+    <text class="subtitle">统一管理登录态和账号安全</text>
+    <view class="profile-shell">
+      <view class="avatar">👤</view>
+      <view class="profile-info">
+        <text class="name">{{user ? (user.nickname || '微信用户') : '未登录用户'}}</text>
+        <text class="helper">{{user ? (user.openid || '无 openid') : '点击下方按钮去登录'}}</text>
+      </view>
+      <view class="status-chip {{token ? 'status-chip-online' : 'status-chip-offline'}}">
+        {{token ? '已登录' : '未登录'}}
+      </view>
+    </view>
+  </view>
+
+  <view class="card action-card">
+    <view class="action-item">
+      <view class="action-text">
+        <text class="action-title">账号登录</text>
+        <text class="action-desc">微信授权或开发环境 Mock 登录</text>
+      </view>
+      <button class="primary-btn" bindtap="goLogin">去登录</button>
+    </view>
+
+    <view class="action-item">
+      <view class="action-text">
+        <text class="action-title">登录状态校验</text>
+        <text class="action-desc">验证当前 token 是否仍然有效</text>
+      </view>
+      <button class="ghost-btn" bindtap="verifyToken">校验 Token</button>
+    </view>
+
+    <view class="divider"></view>
+    <button class="danger-btn" bindtap="logout">退出登录</button>
+  </view>
+</view>

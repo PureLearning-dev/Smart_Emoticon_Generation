@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="card">
+    <text class="title">我的生成</text>
+    <text class="subtitle">管理并查看已生成图片</text>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">生成记录</text>
+      <text class="section-desc">{{generatedList.length}} 条</text>
+    </view>
+
+    <view class="list">
+      <view
+        class="list-item"
+        wx:for="{{generatedList}}"
+        wx:key="id"
+        data-item="{{item}}"
+        bindtap="onPreviewItem"
+      >
+        <text class="item-title">{{item.title}}</text>
+        <view class="meta-row">
+          <text class="meta-tag">{{item.style}}</text>
+          <text class="meta-time">{{item.time}}</text>
+        </view>
+        <view class="action-btn">预览图片</view>
+      </view>
+    </view>
+  </view>
+
+  <button class="primary-btn" bindtap="goCreateNew">去生成新图片</button>
+</view>

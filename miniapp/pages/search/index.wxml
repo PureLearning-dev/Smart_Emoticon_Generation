@@ -1,0 +1,88 @@
+<view class="page">
+  <view class="card">
+    <text class="title">智能搜索</text>
+    <text class="subtitle">文本搜图 / 图搜图 / URL 搜图</text>
+
+    <view class="mode-row">
+      <view
+        class="mode-btn {{mode==='text' ? 'mode-btn-active' : ''}}"
+        data-mode="text"
+        bindtap="switchMode"
+      >
+        文本
+      </view>
+      <view
+        class="mode-btn {{mode==='image' ? 'mode-btn-active' : ''}}"
+        data-mode="image"
+        bindtap="switchMode"
+      >
+        上传图片
+      </view>
+      <view
+        class="mode-btn {{mode==='url' ? 'mode-btn-active' : ''}}"
+        data-mode="url"
+        bindtap="switchMode"
+      >
+        图片 URL
+      </view>
+    </view>
+
+    <view wx:if="{{mode==='text'}}" class="search-panel">
+      <input
+        class="input"
+        placeholder="请输入搜索关键词"
+        placeholder-class="placeholder"
+        value="{{keyword}}"
+        bindinput="onInputKeyword"
+      />
+      <button class="primary-btn" bindtap="onSearchAction">开始搜索</button>
+    </view>
+
+    <view wx:if="{{mode==='url'}}" class="search-panel">
+      <input
+        class="input"
+        placeholder="请输入图片 URL"
+        placeholder-class="placeholder"
+        value="{{imageUrl}}"
+        bindinput="onInputImageUrl"
+      />
+      <button class="primary-btn" bindtap="onSearchAction">URL 搜图</button>
+    </view>
+
+    <view wx:if="{{mode==='image'}}" class="search-panel">
+      <view class="upload-card">
+        <text class="upload-tip">从相册/相机选择图片后自动搜索</text>
+        <text wx:if="{{imagePath}}" class="helper">已选择：{{imagePath}}</text>
+      </view>
+      <button class="primary-btn" bindtap="onSearchAction">选择并搜索</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-head">
+      <text class="section-title">搜索结果</text>
+      <text class="section-desc">{{results.length}} 条</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="state-text">加载中...</view>
+    <view wx:elif="{{results.length===0}}" class="state-text">暂无结果，试试其他关键词</view>
+
+    <view wx:else class="list">
+      <view
+        class="list-item"
+        wx:for="{{results}}"
+        wx:key="index"
+        data-id="{{item.id}}"
+        data-file-url="{{item.fileUrl}}"
+        data-ocr-text="{{item.ocrText}}"
+        bindtap="goDetail"
+      >
+        <image class="cover" src="{{item.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}" mode="aspectFill" />
+        <view class="item-content">
+          <text class="item-title">ID: {{item.id || '--'}}  相似度: {{item.score}}</text>
+          <text class="item-text">{{item.ocrText || '暂无 OCR 文本'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

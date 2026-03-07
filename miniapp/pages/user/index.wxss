@@ -1,0 +1,155 @@
+.page {
+  min-height: 100vh;
+  padding: 24rpx;
+  background: #f7f8fa;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
+}
+
+.title {
+  font-size: 36rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin-top: 20rpx;
+  display: block;
+  font-size: 30rpx;
+  color: #666666;
+}
+
+.hero-card {
+  padding-bottom: 24rpx;
+}
+
+.profile-shell {
+  margin-top: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  background: #f7f8fa;
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.avatar {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: rgba(7, 193, 96, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.name {
+  display: block;
+  font-size: 30rpx;
+  color: #333333;
+  font-weight: 600;
+}
+
+.helper {
+  margin-top: 20rpx;
+  display: block;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.status-chip {
+  font-size: 22rpx;
+  border-radius: 999rpx;
+  padding: 8rpx 14rpx;
+  white-space: nowrap;
+}
+
+.status-chip-online {
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.12);
+}
+
+.status-chip-offline {
+  color: #999999;
+  background: #eef1f5;
+}
+
+.action-card {
+  padding-top: 24rpx;
+}
+
+.action-item {
+  padding: 20rpx 0;
+}
+
+.action-text {
+  margin-bottom: 20rpx;
+}
+
+.action-title {
+  display: block;
+  color: #333333;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.action-desc {
+  margin-top: 20rpx;
+  display: block;
+  color: #999999;
+  font-size: 24rpx;
+}
+
+.divider {
+  height: 2rpx;
+  background: #f0f2f5;
+  margin: 20rpx 0;
+}
+
+.primary-btn,
+.ghost-btn,
+.danger-btn {
+  height: 80rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  border: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.primary-btn {
+  background: #07c160;
+  color: #ffffff;
+}
+
+.ghost-btn {
+  background: rgba(7, 193, 96, 0.12);
+  color: #07c160;
+}
+
+.danger-btn {
+  margin-top: 20rpx;
+  background: rgba(238, 10, 36, 0.12);
+  color: #ee0a24;
+}
+
+button::after {
+  border: none;
+}
