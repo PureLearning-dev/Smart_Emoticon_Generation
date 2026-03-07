@@ -4,17 +4,12 @@
       <text class="title">智能表情包中心</text>
       <text class="tag">Beta</text>
     </view>
-    <text class="subtitle"></text>
-    <view class="hero-actions">
-      <button type="default" class="hero-primary-btn" bindtap="goSearchText">文本搜索</button>
-      <button type="default" class="hero-ghost-btn" bindtap="goSearchImage">图搜图</button>
-    </view>
+    <text class="hero-slogan">发现与生成你的表情包</text>
   </view>
 
   <view class="quick-entry card">
     <view class="section-head">
       <text class="section-title">功能入口</text>
-      <text class="section-desc">保持简洁高效</text>
     </view>
     <view class="entry-grid">
       <view class="entry-item" hover-class="entry-item-hover" bindtap="goSearchText">
