@@ -1,0 +1,20 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/search/index",
+    "pages/detail/index",
+    "pages/user/index",
+    "pages/login/index",
+    "pages/plaza/index",
+    "pages/my-creation/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "智能表情包中心",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F7F8FA",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
