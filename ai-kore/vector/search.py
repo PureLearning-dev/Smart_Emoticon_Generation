@@ -2,9 +2,10 @@
 Milvus 向量搜索封装
 
 职责：
-- 文本相似度搜索：文本 → CLIP 向量化 → Milvus ANN（text_vector）
-- 图相似度搜索：图片 → CLIP 向量化 → Milvus ANN（image_vector）
+- 文本相似度搜索：文本 → CLIP 向量化 → Milvus ANN（vector）
+- 图相似度搜索：图片 → CLIP 向量化 → Milvus ANN（vector）
 - 返回 Top-K 的 embedding_id + score
+- 单向量字段：CLIP 将图像与文本映射到同一语义空间，故 text/image 共用 vector
 """
 
 from pathlib import Path
@@ -17,6 +18,9 @@ try:
 except ImportError:
     import os
     MILVUS_COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME", "meme_embeddings")
+
+# Milvus 单向量字段名，文本/图搜均在此字段检索
+VECTOR_FIELD = "vector"
 
 
 def _search(
@@ -32,7 +36,7 @@ def _search(
 
     Args:
         query_vector: 查询向量
-        anns_field: 向量字段名，"text_vector" 或 "image_vector"
+        anns_field: 向量字段名，"vector"
         top_k: 返回数量
         collection_name: 集合名称
         alias: 连接别名
@@ -87,8 +91,8 @@ def search_by_text(
     if not text or not text.strip():
         return []
     connect(alias=alias)
-    vector = encode_text(text.strip())
-    return _search(vector, "text_vector", top_k=top_k, collection_name=collection_name, alias=alias)
+    vec = encode_text(text.strip())
+    return _search(vec, VECTOR_FIELD, top_k=top_k, collection_name=collection_name, alias=alias)
 
 
 def search_by_image(
@@ -115,5 +119,5 @@ def search_by_image(
     from vector.client import connect
 
     connect(alias=alias)
-    vector = encode_image(image_input)
-    return _search(vector, "image_vector", top_k=top_k, collection_name=collection_name, alias=alias)
+    vec = encode_image(image_input)
+    return _search(vec, VECTOR_FIELD, top_k=top_k, collection_name=collection_name, alias=alias)

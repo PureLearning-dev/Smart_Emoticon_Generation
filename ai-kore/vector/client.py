@@ -55,10 +55,11 @@ def ensure_collection(
 
     Schema:
         - embedding_id: VARCHAR 主键
-        - image_vector: FLOAT_VECTOR dim 维
-        - text_vector: FLOAT_VECTOR dim 维
+        - vector: FLOAT_VECTOR dim 维（CLIP 图像向量，文本/图搜均在此字段检索，因 CLIP 语义空间对齐）
         - image_url: VARCHAR
         - ocr_text: VARCHAR
+
+    注意：Milvus 不支持单 collection 多向量字段，故仅保留一个 vector 字段。
     """
     from pymilvus import Collection, CollectionSchema, DataType, FieldSchema
 
@@ -67,14 +68,12 @@ def ensure_collection(
 
     fields = [
         FieldSchema(name="embedding_id", dtype=DataType.VARCHAR, max_length=64, is_primary=True),
-        FieldSchema(name="image_vector", dtype=DataType.FLOAT_VECTOR, dim=dim),
-        FieldSchema(name="text_vector", dtype=DataType.FLOAT_VECTOR, dim=dim),
+        FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=dim),
         FieldSchema(name="image_url", dtype=DataType.VARCHAR, max_length=512),
         FieldSchema(name="ocr_text", dtype=DataType.VARCHAR, max_length=4096),
     ]
-    schema = CollectionSchema(fields=fields, description="meme 图像+文本向量")
+    schema = CollectionSchema(fields=fields, description="meme 图像向量（CLIP 图像向量，文本/图搜共用）")
     coll = Collection(name=collection_name, schema=schema, using=alias)
     # 为向量字段创建索引，便于后续 ANN 检索；归一化向量用 IP（内积=余弦相似度）
     index_params = {"index_type": "IVF_FLAT", "metric_type": "IP", "params": {"nlist": 128}}
-    coll.create_index("image_vector", index_params)
-    coll.create_index("text_vector", index_params)
+    coll.create_index("vector", index_params)

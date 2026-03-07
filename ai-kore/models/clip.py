@@ -44,10 +44,13 @@ def _load_model():
         return
 
     _device = _get_device()
-    _model, _preprocess, _tokenizer = open_clip.create_model_and_transforms(
+    # create_model_and_transforms 返回 (model, preprocess_train, preprocess_val)，均为图像相关
+    # 文本 tokenizer 需单独通过 get_tokenizer 获取
+    _model, _preprocess, _ = open_clip.create_model_and_transforms(
         CLIP_MODEL_NAME,
         pretrained=CLIP_PRETRAINED,
     )
+    _tokenizer = open_clip.get_tokenizer(CLIP_MODEL_NAME)
     _model = _model.to(_device).eval()
 
 
