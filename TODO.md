@@ -85,6 +85,7 @@
   * [x] 新增首页文章推荐基础层与接口：`PlazaContent`、`PlazaArticle`、`PlazaService`、`PlazaController`
   * [x] 新增首页文章推荐接口：`GET /api/plaza/recommendations`、`GET /api/plaza/recommendations/{id}`
   * [ ] 公共广场接口延后：`GET /api/plaza/contents`、`GET /api/plaza/contents/{id}`
+  * [x] 生成图片全链路：Spring Boot 调 ai-kore 生成图 → OSS → Milvus 用户生成图集合（user_generated_embeddings）→ 写入 user_generated_images；双集合隔离（文本/图搜仅查 meme_embeddings，公共广场仅查 user_generated_embeddings 且 is_public==1）；`POST /api/image/generate`、ai-kore `POST /api/v1/image/generate`（当前占位图+规则使用场景，百炼待接入）
 
 ### 3. 文本搜索数据流
 

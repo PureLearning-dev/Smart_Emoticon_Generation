@@ -77,3 +77,44 @@ def ensure_collection(
     # 为向量字段创建索引，便于后续 ANN 检索；归一化向量用 IP（内积=余弦相似度）
     index_params = {"index_type": "IVF_FLAT", "metric_type": "IP", "params": {"nlist": 128}}
     coll.create_index("vector", index_params)
+
+
+def ensure_user_generated_collection(
+    collection_name: str,
+    dim: int,
+    *,
+    alias: str = "default",
+) -> None:
+    """
+    确保「用户生成图」专用 collection 存在，若不存在则创建。
+
+    仅用于 user_generated_embeddings，与 meme_embeddings 分离：
+    - 文本/图搜仅查 meme_embeddings（爬虫图）
+    - 公共广场仅查本集合且 is_public == 1
+
+    Schema:
+        - embedding_id: VARCHAR 主键
+        - vector: FLOAT_VECTOR dim 维
+        - image_url: VARCHAR
+        - ocr_text: VARCHAR
+        - is_public: INT8（0 私有，1 公开到广场）
+    """
+    from pymilvus import Collection, CollectionSchema, DataType, FieldSchema
+
+    if utility.has_collection(collection_name, using=alias):
+        return
+
+    fields = [
+        FieldSchema(name="embedding_id", dtype=DataType.VARCHAR, max_length=64, is_primary=True),
+        FieldSchema(name="vector", dtype=DataType.FLOAT_VECTOR, dim=dim),
+        FieldSchema(name="image_url", dtype=DataType.VARCHAR, max_length=512),
+        FieldSchema(name="ocr_text", dtype=DataType.VARCHAR, max_length=4096),
+        FieldSchema(name="is_public", dtype=DataType.INT8),
+    ]
+    schema = CollectionSchema(
+        fields=fields,
+        description="用户生成图向量（仅公共广场检索，且 is_public==1）",
+    )
+    coll = Collection(name=collection_name, schema=schema, using=alias)
+    index_params = {"index_type": "IVF_FLAT", "metric_type": "IP", "params": {"nlist": 128}}
+    coll.create_index("vector", index_params)

@@ -6,9 +6,10 @@
 
 from fastapi import APIRouter
 
-from app.api.v1 import crawl, health, vector
+from app.api.v1 import crawl, health, image_gen, vector
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(crawl.router)
 api_router.include_router(vector.router)
+api_router.include_router(image_gen.router)
 api_router.include_router(health.router)

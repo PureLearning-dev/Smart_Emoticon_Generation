@@ -50,6 +50,7 @@
 - 存储用户生成图片记录（列表展示的主数据）
 - 记录生成输入和输出，支持后续溯源
 - 支持是否公开到广场（`is_public`）
+- **`embedding_id`** 关联 Milvus **用户生成图集合** `user_generated_embeddings`（与爬虫集合 `meme_embeddings` 分离；公共广场仅检索用户生成且 `is_public=1` 的向量）
 
 核心字段：
 
@@ -57,7 +58,8 @@
 - `source_meme_asset_id`、`source_image_url`
 - `prompt_text`、`generated_text`
 - `generated_image_url`
-- `style_tag`、`generation_status`、`is_public`
+- `style_tag`、**`usage_scenario`**（使用场景，用于广场瀑布流展示）、**`embedding_id`**
+- `generation_status`、`is_public`
 
 ## 3. 表关系说明
 
@@ -99,18 +101,23 @@
 - `entity`
   - `PlazaContent.java`：映射 `plaza_contents`
   - `PlazaArticle.java`：映射 `plaza_articles`
+  - **`UserGeneratedImage.java`**：映射 **`user_generated_images`**（生成图片记录）
 - `mapper`
   - `PlazaContentMapper.java`
   - `PlazaArticleMapper.java`
+  - **`UserGeneratedImageMapper.java`**
 - `service`
   - `PlazaService.java`
   - `PlazaServiceImpl.java`
+  - **`ImageGenerateService.java`** / **`ImageGenerateServiceImpl.java`**（调用 ai-kore 生成图并落库）
 - `controller`
   - `PlazaController.java`
+  - **`ImageGenerateController.java`**（**`POST /api/image/generate`**）
 - `dto`
   - `PlazaContentListItem.java`
   - `PlazaContentDetailResponse.java`
   - `PlazaArticleDetail.java`
+  - **`image/ImageGenerateRequest.java`**、**`image/ImageGenerateResponse.java`**
 
 ### 5.2 已实现接口
 
@@ -121,6 +128,11 @@
 - `GET /api/plaza/recommendations/{id}`
   - 用途：首页推荐文章详情
   - 说明：先查 `plaza_contents`，再查 `plaza_articles` 正文详情
+- **`POST /api/image/generate`**
+  - 用途：根据 prompt 生成表情包图并落库
+  - 说明：调用 ai-kore 生成图 → OSS 上传 → 向量写入 `user_generated_embeddings` → 写入 `user_generated_images`
+  - 请求体：`prompt`（必填）、`userId`（必填）、`imageUrls`（可选）、`isPublic`（可选，默认 0）
+  - 响应：`imageUrl`、`usageScenario`、`embeddingId`、`id`
 
 ### 5.3 当前查询规则
 
@@ -136,7 +148,31 @@
 - 当前阶段先不要接入公共广场页，先保证首页文章推荐链路稳定
 - 当前如仅插入文章型内容，则前端无需依赖 `meme_assets` 即可完成首页文章推荐演示
 
-### 5.5 已完成小程序首页接入（miniapp）
+### 5.5 生成图片与 Milvus 双集合（已实现）
+
+**数据隔离规则**：
+
+- **文本搜图 / 图搜图**：仅检索 **Milvus 集合 `meme_embeddings`**（爬虫管线写入的数据），不检索用户生成图。
+- **公共广场**：仅检索 **Milvus 集合 `user_generated_embeddings`** 且 **`is_public == 1`**，不检索爬虫图。
+- 因此使用 **两个独立 Milvus 集合**：`meme_embeddings`（现有）、`user_generated_embeddings`（新建，schema 含 `embedding_id`、`vector`、`image_url`、`ocr_text`、`is_public`）。
+
+**ai-kore 已实现**：
+
+- **配置**：`app.core.config` 新增 **`MILVUS_USER_GENERATED_COLLECTION_NAME`**（默认 `user_generated_embeddings`）。
+- **Milvus**：`vector.client.ensure_user_generated_collection(collection_name, dim)` 创建用户生成图专用集合；`vector.collection.insert_one_user_generated(embedding_id, vector, image_url, ocr_text, is_public)` 仅写入该集合。
+- **接口**：**`POST /api/v1/image/generate`**（JSON：`prompt` 必填，`image_urls` 可选，`is_public` 可选默认 0）。流程：生成图（当前占位）→ 上传 OSS → 使用场景（规则/占位）→ CLIP 向量化 → **仅写入 user_generated_embeddings** → 返回 `image_url`、`usage_scenario`、`embedding_id`。
+- **路由**：`app.api.v1.image_gen` 已挂载到 `/api/v1`。
+
+**smart_meter 已实现**：
+
+- **实体与 Mapper**：`UserGeneratedImage`（对应 `user_generated_images`）、`UserGeneratedImageMapper`（MyBatis-Plus）。
+- **DTO**：`ImageGenerateRequest`（prompt、userId、imageUrls、isPublic）、`ImageGenerateResponse`（imageUrl、usageScenario、embeddingId、id）。
+- **Service**：`ImageGenerateService` / `ImageGenerateServiceImpl` 调用 ai-kore `POST /api/v1/image/generate`，解析响应后写入 `user_generated_images`。
+- **接口**：**`POST /api/image/generate`**，请求体 JSON：`prompt`（必填）、`userId`（必填）、`imageUrls`（可选）、`isPublic`（可选，默认 0）。成功返回 200 及 `imageUrl`、`usageScenario`、`embeddingId`、`id`。
+
+**说明**：当前生成图为占位实现（最小图 + 规则使用场景）；阿里百炼接入后替换 ai-kore 内生成逻辑即可。用户生成图 **从不** 写入 `meme_embeddings`，保证文本/图搜仅查爬虫图、公共广场仅查用户生成且公开的图。
+
+### 5.6 已完成小程序首页接入（miniapp）
 
 当前已在 `miniapp` 中完成首页文章推荐的最小可用接入，具体如下：
 

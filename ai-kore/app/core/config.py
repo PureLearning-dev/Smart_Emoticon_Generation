@@ -41,6 +41,8 @@ OSS_PREFIX = _get("OSS_PREFIX", "meme-assets/")  # 上传路径前缀
 MILVUS_HOST = _get("MILVUS_HOST", "127.0.0.1")
 MILVUS_PORT = _get_int("MILVUS_PORT", 19530)
 MILVUS_COLLECTION_NAME = _get("MILVUS_COLLECTION_NAME", "meme_embeddings")
+# 用户生成图专用集合（公共广场仅检索此集合且 is_public==1；文本/图搜仅检索 meme_embeddings）
+MILVUS_USER_GENERATED_COLLECTION_NAME = _get("MILVUS_USER_GENERATED_COLLECTION_NAME", "user_generated_embeddings")
 MILVUS_VECTOR_DIM = _get_int("MILVUS_VECTOR_DIM", 512)  # CLIP ViT-B-32 输出 512 维
 
 # ======================== CLIP 模型配置 ========================
