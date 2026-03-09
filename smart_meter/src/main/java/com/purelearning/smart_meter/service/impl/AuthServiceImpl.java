@@ -2,6 +2,8 @@ package com.purelearning.smart_meter.service.impl;
 
 import com.purelearning.smart_meter.client.WechatMiniAppClient;
 import com.purelearning.smart_meter.dto.auth.AuthUserView;
+import com.purelearning.smart_meter.dto.auth.LoginRequest;
+import com.purelearning.smart_meter.dto.auth.RegisterRequest;
 import com.purelearning.smart_meter.dto.auth.WechatLoginRequest;
 import com.purelearning.smart_meter.dto.auth.WechatLoginResponse;
 import com.purelearning.smart_meter.entity.User;
@@ -13,8 +15,11 @@ import com.purelearning.smart_meter.service.enums.UserType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -24,11 +29,14 @@ public class AuthServiceImpl implements AuthService {
     private final WechatMiniAppClient wechatClient;
     private final UserMapper userMapper;
     private final JwtService jwtService;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthServiceImpl(WechatMiniAppClient wechatClient, UserMapper userMapper, JwtService jwtService) {
+    public AuthServiceImpl(WechatMiniAppClient wechatClient, UserMapper userMapper, JwtService jwtService,
+                           PasswordEncoder passwordEncoder) {
         this.wechatClient = wechatClient;
         this.userMapper = userMapper;
         this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -50,7 +58,10 @@ public class AuthServiceImpl implements AuthService {
         boolean isNewUser = false;
         if (user == null) {
             user = new User();
-            user.setOpenid(session.openid());
+            String openidVal = session.openid();
+            user.setOpenid(openidVal);
+            user.setUsername(truncateWxUsername("wx_" + openidVal));
+            user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
             if (StringUtils.hasText(request.getNickname())) {
                 user.setNickname(request.getNickname());
             }
@@ -100,6 +111,8 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             user = new User();
             user.setOpenid(mockOpenid);
+            user.setUsername(truncateWxUsername("wx_" + mockOpenid));
+            user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
             if (StringUtils.hasText(request.getNickname())) {
                 user.setNickname(request.getNickname());
             }
@@ -136,9 +149,65 @@ public class AuthServiceImpl implements AuthService {
         return verified;
     }
 
+    @Override
+    public WechatLoginResponse login(LoginRequest request) {
+        if (request == null || !StringUtils.hasText(request.getUsername()) || !StringUtils.hasText(request.getPassword())) {
+            throw new IllegalArgumentException("用户名或密码不能为空");
+        }
+        String username = request.getUsername().trim();
+        User user = userMapper.selectByUsername(username);
+        if (user == null) {
+            throw new IllegalArgumentException("用户名或密码错误");
+        }
+        if (user.getStatus() == null || user.getStatus() != UserStatus.NORMAL.getCode()) {
+            throw new IllegalArgumentException("账号已被禁用");
+        }
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("用户名或密码错误");
+        }
+        JwtService.Token token = jwtService.issueToken(user);
+        WechatLoginResponse resp = new WechatLoginResponse();
+        resp.setToken(token.token());
+        resp.setExpiresInSeconds(token.expiresInSeconds());
+        resp.setNewUser(false);
+        resp.setUser(toView(user));
+        return resp;
+    }
+
+    @Override
+    public WechatLoginResponse register(RegisterRequest request) {
+        if (request == null || !StringUtils.hasText(request.getUsername()) || !StringUtils.hasText(request.getPassword())) {
+            throw new IllegalArgumentException("账号和密码不能为空");
+        }
+        String username = request.getUsername().trim();
+        if (userMapper.selectByUsername(username) != null) {
+            throw new IllegalArgumentException("用户名已存在");
+        }
+        User user = new User();
+        user.setUsername(username);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setOpenid(null);
+        user.setStatus(UserStatus.NORMAL.getCode());
+        user.setUserType(UserType.NORMAL_USER.getCode());
+        userMapper.insert(user);
+        JwtService.Token token = jwtService.issueToken(user);
+        WechatLoginResponse resp = new WechatLoginResponse();
+        resp.setToken(token.token());
+        resp.setExpiresInSeconds(token.expiresInSeconds());
+        resp.setNewUser(true);
+        resp.setUser(toView(user));
+        return resp;
+    }
+
+    private static String truncateWxUsername(String s) {
+        if (s == null) return "wx_guest";
+        return s.length() <= 64 ? s : s.substring(0, 64);
+    }
+
     private static AuthUserView toView(User user) {
         AuthUserView view = new AuthUserView();
         view.setId(user.getId());
+        view.setUsername(user.getUsername());
         view.setOpenid(user.getOpenid());
         view.setNickname(user.getNickname());
         view.setAvatarUrl(user.getAvatarUrl());

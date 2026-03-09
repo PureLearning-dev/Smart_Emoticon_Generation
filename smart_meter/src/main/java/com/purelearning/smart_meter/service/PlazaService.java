@@ -31,4 +31,27 @@ public interface PlazaService extends IService<PlazaContent> {
      * @return 内容详情
      */
     PlazaContentDetailResponse getRecommendationDetail(Long id);
+
+    /**
+     * 分页查询公共广场用户生成图列表。
+     * 仅返回 is_public=1 且 generation_status=1 的记录，支持关键词与 style_tag 模糊筛选。
+     *
+     * @param keyword  可选，模糊匹配 usage_scenario、prompt_text
+     * @param styleTag 可选，模糊匹配 style_tag
+     * @param limit    每页条数
+     * @param offset   偏移量
+     * @return 用户生成图列表项
+     */
+    List<com.purelearning.smart_meter.dto.plaza.PlazaUserGeneratedItem> listPublicUserGenerated(String keyword, String styleTag, int limit, int offset);
+
+    /**
+     * 分页查询指定用户的生成图列表（「我的生成」页）。
+     * 仅返回 generation_status=1 的记录，按 create_time 倒序。
+     *
+     * @param userId 用户 ID，必须为当前登录用户（由 Controller 校验）
+     * @param limit  每页条数
+     * @param offset 偏移量
+     * @return 用户生成图列表项，与公共广场卡片结构一致
+     */
+    List<com.purelearning.smart_meter.dto.plaza.PlazaUserGeneratedItem> listByUserId(Long userId, int limit, int offset);
 }

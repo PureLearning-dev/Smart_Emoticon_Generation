@@ -47,13 +47,17 @@ public class JwtService {
         String headerJson = "{\"alg\":\"HS256\",\"typ\":\"JWT\"}";
         String header = b64Url(headerJson.getBytes(StandardCharsets.UTF_8));
 
-        Map<String, Object> payloadMap = Map.of(
-                "sub", String.valueOf(user.getId()),
-                "iat", iat,
-                "exp", exp,
-                "openid", user.getOpenid(),
-                "userType", user.getUserType()
-        );
+        Map<String, Object> payloadMap = new java.util.HashMap<>();
+        payloadMap.put("sub", String.valueOf(user.getId()));
+        payloadMap.put("iat", iat);
+        payloadMap.put("exp", exp);
+        payloadMap.put("userType", user.getUserType());
+        if (user.getOpenid() != null) {
+            payloadMap.put("openid", user.getOpenid());
+        }
+        if (user.getUsername() != null) {
+            payloadMap.put("username", user.getUsername());
+        }
         String payloadJson;
         try {
             payloadJson = objectMapper.writeValueAsString(payloadMap);

@@ -34,8 +34,9 @@
 
 ### B. 中期答辩前仍未完成的核心能力（必须补齐）
 
-- [ ] 真实接口接入：公共广场页（当前为静态占位数据）
-- [ ] 真实接口接入：我的生成页（当前为静态占位数据）
+- [x] 真实接口接入：公共广场页（用户生成图瀑布流，GET /api/plaza/contents）
+- [x] 真实接口接入：我的生成页（GET /api/user/generated-images，按 userId 分页，瀑布流+卡片复用+加载更多+空态）
+- [x] 生成图详情页：点击卡片进入详情（GET /api/generated-images/{id}），展示元数据 + 保存到相册 + 一键分享
 - [ ] 首页推荐区改为接口数据（当前优先只接文章推荐）
 - [ ] 端到端联调回归与演示脚本固定（避免答辩现场不稳定）
 - [ ] AI 配文主链路最小可演示版（至少打通“请求->返回文案”）
@@ -44,8 +45,8 @@
 
 #### P0（必须完成，不完成会影响中期答辩）
 
-- [ ] 打通 `公共广场` 后端接口并接入前端页面
-- [ ] 打通 `我的生成` 后端接口并接入前端页面
+- [x] 打通 `公共广场` 后端接口并接入前端页面
+- [x] 打通 `我的生成` 后端接口并接入前端页面（GET /api/user/generated-images，PlazaService.listByUserId，瀑布流复用广场卡片）
 - [x] 首页 `文章推荐内容` 接入后端接口（替换静态数据）
 - [ ] 完成一次全链路冒烟：登录 -> 文本搜图 -> 图搜图 -> 查看详情 -> 公共广场 -> 我的生成
 - [ ] 准备中期答辩演示数据与固定演示账号（避免现场空数据）
@@ -84,14 +85,17 @@
   * [x] 新增功能设计文档：`Function.md`（记录原理、表关系、查询流程与实现细节）
   * [x] 新增首页文章推荐基础层与接口：`PlazaContent`、`PlazaArticle`、`PlazaService`、`PlazaController`
   * [x] 新增首页文章推荐接口：`GET /api/plaza/recommendations`、`GET /api/plaza/recommendations/{id}`
-  * [ ] 公共广场接口延后：`GET /api/plaza/contents`、`GET /api/plaza/contents/{id}`
-  * [x] 生成图片全链路：Spring Boot 调 ai-kore 生成图 → OSS → Milvus 用户生成图集合（user_generated_embeddings）→ 写入 user_generated_images；双集合隔离（文本/图搜仅查 meme_embeddings，公共广场仅查 user_generated_embeddings 且 is_public==1）；`POST /api/image/generate`、ai-kore `POST /api/v1/image/generate`（当前占位图+规则使用场景，百炼待接入）
+  * [x] 公共广场用户生成图列表：GET /api/plaza/contents（keyword、styleTag 模糊筛选，分页），小程序广场页瀑布流+搜索+style_tag+加载更多
+  * [x] 生成图片全链路：... 万相支持 0 或 1 张参考图 ...；**参考图已打通**：小程序选图 → 上传 `/api/image/upload-reference` → 生成时带 `imageUrls`，Java 转发至 ai-kore，万相使用参考图（见 docs/ANALYSIS_IMAGE_GENERATE_REFERENCE_IMAGE.md）
 
 ### 3. 文本搜索数据流
 
 - [x] ai-kore：文本向量化 + Milvus 相似检索
 - [x] smart_meter：SearchController、SearchService
   * [x] GET /api/search?query=xxx&topK=10
+- [ ] 公共广场搜图仅检索用户生成图（见 docs/PROMPT_PLAZA_SEARCH_USER_GENERATED_ONLY.md）
+  * [x] ai-kore：_search 支持 expr；新增 search_plaza_by_text / search_plaza_by_image（user_generated_embeddings + is_public==1）；路由改为调用 search_plaza_by_*
+  * [x] smart_meter：搜索接口改为调 ai-kore 广场检索，按 embedding_id 回表 user_generated_images，返回 PlazaSearchResultItem
 
 ### 2. 登录功能
 
@@ -139,6 +143,8 @@
   * [x] ai-kore：pipeline 写入 Milvus 后调用 smart_meter 写入 meme_assets
   * [x] OCR 前对图片做适度缩小（OCR_MAX_DIMENSION=1024），加速识别
   * [x] scripts/test_ocr.py：OCR 独立测试脚本（本地路径或 --url 下载后识别）
+- [x] smart_meter：新增测试接口 GET /api/test/ai-crawl-process-image 调用 ai-kore POST /api/v1/crawl/process-image 触发离线入库管线
+- [x] smart_meter：新增正式接口 POST /api/crawl/process-image，调用 ai-kore POST /api/v1/crawl/process-image 并返回结构化结果
 - [ ] 后续实现自动爬取网页中的表情包，并调用上述功能进行自动化收集
 
 ### 7. 微信小程序前端

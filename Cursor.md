@@ -291,9 +291,15 @@ smart_meter/                                    # Spring Boot 主业务微服务
 - **预加载**：FastAPI 启动时通过 lifespan 调用 `init_ocr()`，避免首次请求延迟。
 - **管线**：下载 → 本地文件 → 缩小（OCR_MAX_DIMENSION）→ `recognize_text(bytes)`。
 
+### 公共广场搜图数据源
+
+- **文字搜图**与**图搜图**属于公共广场能力，**仅**检索「用户生成图」：Milvus **user_generated_embeddings**（且 **is_public == 1**）+ MySQL **user_generated_images**（按 embedding_id 回表）。
+- 不检索爬虫/入库的 meme_embeddings、meme_assets。实现与接口约定见 **docs/PROMPT_PLAZA_SEARCH_USER_GENERATED_ONLY.md**。
+
 ### 微信小程序 miniapp
 
 - **风格**：小红书风格，主色 `#FE2C55`，卡片圆角 16rpx，背景 `#F7F8FA`。
 - **TabBar 图标**：优先使用第三方图标（如 iconfont.cn 下载 81×81 PNG），不要自行生成；可用 `sips -z 81 81 xxx.png` 缩放。
 - **不要使用 van-pull-refresh**：真机可能报错，推荐页用原生 `enablePullDownRefresh`。
 - **401 处理**：request.js 已统一处理，未登录时 toast 并跳转用户页。
+- **注册/登录报 Not Found（404）**：多为 8080 上跑的是旧版本后端。修改 smart_meter 中 auth 相关代码后，需在 `smart_meter` 目录执行 `mvn clean compile spring-boot:run` 重新编译并重启；并确认数据库已执行 SQL/schema.sql 或迁移脚本（users 表含 username、password_hash）。小程序 404 时会提示「接口不存在，请确认后端已重新编译并重启」；可用 GET `http://127.0.0.1:8080/api/auth/health` 确认当前后端是否包含登录/注册接口（返回 `{"ok":true,"auth":"login,register,wechat"}` 即正常）。

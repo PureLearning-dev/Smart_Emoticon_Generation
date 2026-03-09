@@ -5,6 +5,12 @@ spring:
   application:
     name: smart_meter
 
+  # 参考图上传需放宽 multipart 限制（与业务层 10MB 一致）
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/smart_meter_system?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true

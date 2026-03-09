@@ -151,11 +151,11 @@ Page({
   },
 
   /**
-   * 跳转我的生成页
+   * 快捷入口：生成图片（跳转生成页）
    */
   goMyCreationPage() {
     wx.navigateTo({
-      url: "/pages/my-creation/index"
+      url: "/pages/ai-generate/index"
     });
   },
 

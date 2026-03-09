@@ -1,49 +1,120 @@
 /**
  * 我的生成页
- * 职责：展示用户生成图片记录（当前静态数据，后续接后端接口）
+ * 职责：按当前用户 ID 分页拉取生成图列表，瀑布流展示，卡片与公共广场复用；支持加载更多、空态、预览大图
  */
+const { getMyGeneratedImages } = require("../../services/myCreation");
+const { getUser, getToken } = require("../../utils/auth");
+
+const PAGE_SIZE = 10;
+
 Page({
   data: {
-    generatedList: [
-      {
-        id: 401,
-        title: "早八打工人配文图",
-        style: "搞笑",
-        time: "2026-03-06 09:20"
-      },
-      {
-        id: 402,
-        title: "周五下班快乐图",
-        style: "治愈",
-        time: "2026-03-05 18:48"
-      },
-      {
-        id: 403,
-        title: "会议模式表情图",
-        style: "职场",
-        time: "2026-03-05 11:07"
-      }
-    ]
+    list: [],
+    offset: 0,
+    limit: PAGE_SIZE,
+    hasMore: true,
+    loading: false,
+    loadingMore: false
+  },
+
+  onLoad() {
+    this.loadList(true);
+  },
+
+  onShow() {
+    // 从其他页返回时若未加载过可刷新
+    if (this.data.list.length === 0 && !this.data.loading) {
+      this.loadList(true);
+    }
   },
 
   /**
-   * 预览生成结果（占位）
-   * @param {object} e 点击事件
+   * 加载列表：replace 为 true 时替换 list，否则追加
    */
-  onPreviewItem(e) {
-    const item = e.currentTarget.dataset.item || {};
-    wx.showToast({
-      title: `${item.title || "生成图片"}预览待接后端`,
-      icon: "none"
+  async loadList(replace) {
+    const user = getUser();
+    const userId = user && user.id;
+    if (!userId) {
+      wx.showToast({ title: "请先登录", icon: "none" });
+      wx.navigateTo({ url: "/pages/login/index" });
+      return;
+    }
+    if (!getToken()) {
+      wx.showToast({ title: "请先登录", icon: "none" });
+      wx.navigateTo({ url: "/pages/login/index" });
+      return;
+    }
+
+    if (this.data.loading && replace) return;
+    if (this.data.loadingMore && !replace) return;
+    if (!replace && !this.data.hasMore) return;
+
+    if (replace) {
+      this.setData({ loading: true });
+    } else {
+      this.setData({ loadingMore: true });
+    }
+
+    try {
+      const res = await getMyGeneratedImages({
+        userId,
+        limit: this.data.limit,
+        offset: this.data.offset
+      });
+      const arr = Array.isArray(res) ? res : [];
+      const hasMore = arr.length >= this.data.limit;
+      const nextOffset = this.data.offset + arr.length;
+
+      if (replace) {
+        this.setData({
+          list: arr,
+          offset: nextOffset,
+          hasMore,
+          loading: false
+        });
+      } else {
+        this.setData({
+          list: this.data.list.concat(arr),
+          offset: nextOffset,
+          hasMore,
+          loadingMore: false
+        });
+      }
+    } catch (e) {
+      if (replace) {
+        this.setData({ loading: false });
+      } else {
+        this.setData({ loadingMore: false });
+      }
+      const msg = (e && e.message) ? e.message : "加载失败，请重试";
+      wx.showToast({ title: msg, icon: "none" });
+    }
+  },
+
+  /**
+   * 加载更多
+   */
+  onLoadMore() {
+    this.loadList(false);
+  },
+
+  /**
+   * 点击卡片进入详情页
+   */
+  onGoDetail(e) {
+    const id = e.currentTarget.dataset.id;
+    if (id == null) return;
+    wx.navigateTo({
+      url: `/pages/generated-detail/index?id=${encodeURIComponent(id)}`
     });
   },
 
   /**
-   * 跳转搜索页重新生成（占位入口）
+   * 跳转生成页（创作新图）
    */
   goCreateNew() {
     wx.navigateTo({
-      url: "/pages/search/index?mode=image"
+      url: "/pages/ai-generate/index"
     });
   }
 });

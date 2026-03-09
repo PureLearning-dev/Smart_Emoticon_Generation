@@ -137,10 +137,9 @@ def process_single_image(
         image_vector = encode_image(temp_path)
         result["image_vector_dim"] = len(image_vector)
 
-        # 4. OCR 识别（PaddleOCR 本地，仅支持本地图片；传入缩小后的 bytes 加速）
-        logger.info("OCR 识别（PaddleOCR 本地）")
-        ocr_data = _resize_for_ocr(data, OCR_MAX_DIMENSION)
-        ocr_text = recognize_text(ocr_data)
+        # 4. OCR 识别（本机开发环境完全禁用，避免 PaddleOCR 在 Apple Silicon 上挂掉）
+        logger.info("OCR 暂时禁用，跳过本地 PaddleOCR 识别，使用空文本")
+        ocr_text = ""
         result["ocr_text"] = ocr_text
 
         # 5. 存入 Milvus（同一 URL 已存在则跳过，避免主键冲突）

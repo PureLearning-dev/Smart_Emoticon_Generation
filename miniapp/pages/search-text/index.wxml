@@ -35,18 +35,18 @@
         wx:for="{{results}}"
         wx:key="index"
         data-id="{{item.id}}"
-        data-file-url="{{item.fileUrl}}"
-        data-ocr-text="{{item.ocrText}}"
+        data-file-url="{{item.generatedImageUrl || item.fileUrl}}"
+        data-ocr-text="{{item.promptText || item.usageScenario || item.ocrText}}"
         bindtap="goDetail"
       >
         <image
           class="cover"
-          src="{{item.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
+          src="{{item.generatedImageUrl || item.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
           mode="aspectFill"
         />
         <view class="item-content">
           <text class="item-title">ID: {{item.id || '--'}}  相似度: {{item.score}}</text>
-          <text class="item-text">{{item.ocrText || '暂无 OCR 文本'}}</text>
+          <text class="item-text">{{item.promptText || item.usageScenario || item.ocrText || '暂无文案'}}</text>
         </view>
       </view>
     </view>

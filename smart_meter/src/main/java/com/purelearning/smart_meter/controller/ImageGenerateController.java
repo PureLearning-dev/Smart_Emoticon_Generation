@@ -7,12 +7,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 
 import jakarta.validation.Valid;
+import java.util.Map;
 
 /**
  * 生成图片接口。
@@ -47,5 +54,32 @@ public class ImageGenerateController {
         ImageGenerateResponse response = imageGenerateService.generate(request);
         log.info("<<< [接口] POST /api/image/generate id={} imageUrl={}", response.getId(), response.getImageUrl());
         return response;
+    }
+
+    @PostMapping(value = "/upload-reference", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "上传参考图", description = "上传一张参考图到 OSS，返回公网 URL，用于生成时 imageUrls")
+    public ResponseEntity<?> uploadReference(@RequestParam("file") MultipartFile file) {
+        log.info(">>> [接口] POST /api/image/upload-reference size={}", file != null ? file.getSize() : 0);
+        try {
+            String url = imageGenerateService.uploadReferenceImage(file);
+            log.info("<<< [接口] POST /api/image/upload-reference url={}", url);
+            return ResponseEntity.ok(Map.of("url", url));
+        } catch (HttpStatusCodeException e) {
+            String body = e.getResponseBodyAsString();
+            String detail = body != null && body.length() > 200 ? body.substring(0, 200) + "..." : body;
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = new com.fasterxml.jackson.databind.ObjectMapper().readTree(body);
+                if (node.has("detail")) detail = node.get("detail").asText("");
+            } catch (Exception ignored) { /* ignore */ }
+            log.warn("参考图上传 ai-kore 失败: status={} body={}", e.getStatusCode(), detail);
+            return ResponseEntity.status(502).body(Map.of("error", "参考图上传失败：" + (detail != null ? detail : e.getStatusCode())));
+        } catch (RestClientException e) {
+            log.warn("参考图上传请求异常: {}", e.getMessage());
+            return ResponseEntity.status(502).body(Map.of("error", "参考图上传服务不可用，请确认 ai-kore 已启动"));
+        } catch (Exception e) {
+            log.warn("参考图上传异常", e);
+            String msg = e.getMessage() != null ? e.getMessage() : "参考图上传失败";
+            return ResponseEntity.status(502).body(Map.of("error", msg));
+        }
     }
 }

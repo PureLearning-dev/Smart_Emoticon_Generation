@@ -31,7 +31,24 @@ function getHomepageRecommendationDetail(id) {
   });
 }
 
+/**
+ * 获取公共广场用户生成图列表（分页，支持关键词与 style_tag 筛选）。
+ * @param {object} opts keyword, styleTag, limit, offset
+ * @returns {Promise<Array>}
+ */
+function getPlazaContents(opts) {
+  const keyword = opts && opts.keyword != null ? String(opts.keyword).trim() : "";
+  const styleTag = opts && opts.styleTag != null ? String(opts.styleTag).trim() : "";
+  const limit = opts && opts.limit != null ? opts.limit : 10;
+  const offset = opts && opts.offset != null ? opts.offset : 0;
+  let url = `${API.plaza.contents}?limit=${limit}&offset=${offset}`;
+  if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+  if (styleTag) url += `&styleTag=${encodeURIComponent(styleTag)}`;
+  return request({ url, method: "GET" });
+}
+
 module.exports = {
   getHomepageRecommendations,
-  getHomepageRecommendationDetail
+  getHomepageRecommendationDetail,
+  getPlazaContents
 };

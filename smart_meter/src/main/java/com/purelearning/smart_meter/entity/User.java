@@ -14,8 +14,10 @@ public class User {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    private String username;
+    @TableField("password_hash")
+    private String passwordHash;
     private String openid;
-
     private String nickname;
 
     private String avatarUrl;
@@ -36,6 +38,22 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getOpenid() {

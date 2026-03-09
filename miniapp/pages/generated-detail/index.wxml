@@ -1,0 +1,54 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="card state-text">详情加载中...</view>
+  <view wx:elif="{{!detail}}" class="card state-text">暂无详情数据</view>
+
+  <view wx:else>
+    <view class="card">
+      <text class="title">表情包详情</text>
+      <image
+        class="cover"
+        src="{{detail.generatedImageUrl}}"
+        mode="widthFix"
+        bindtap="onPreview"
+      />
+    </view>
+
+    <view class="card">
+      <view class="section-head">
+        <text class="section-title">表情包信息</text>
+      </view>
+      <view class="meta-row">
+        <text class="meta-label">风格标签</text>
+        <text class="tag">{{detail.styleTag || '日常'}}</text>
+      </view>
+      <view class="meta-row">
+        <text class="meta-label">生成时间</text>
+        <text class="meta-value">{{detail.createTimeFormatted || detail.createTime || '--'}}</text>
+      </view>
+      <view class="meta-row">
+        <text class="meta-label">公开状态</text>
+        <text class="meta-value">{{detail.isPublic === 1 ? '已公开到广场' : '仅自己可见'}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-head">
+        <text class="section-title">使用场景</text>
+      </view>
+      <text class="text-content">{{detail.usageScenario || '日常'}}</text>
+    </view>
+
+    <view class="card">
+      <view class="section-head">
+        <text class="section-title">提示词</text>
+      </view>
+      <text class="text-content">{{detail.promptText || '暂无提示词'}}</text>
+    </view>
+
+    <view class="card actions-card">
+      <button class="primary-btn" bindtap="onSaveToAlbum" disabled="{{saving}}">保存到相册</button>
+      <button class="share-btn" open-type="share">一键分享</button>
+    </view>
+  </view>
+</view>
+

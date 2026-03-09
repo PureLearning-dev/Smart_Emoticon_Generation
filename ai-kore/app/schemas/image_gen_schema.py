@@ -21,5 +21,6 @@ class ImageGenerateResponse(BaseModel):
     """生成图片响应"""
 
     image_url: str = Field(..., description="生成图 OSS 公网 URL")
-    usage_scenario: str = Field(..., description="使用场景标签（如职场、情侣、日常）")
+    usage_scenario: str = Field(..., description="使用场景描述（平易近人、可使用的场景）")
     embedding_id: str = Field(..., description="Milvus 用户生成图集合主键")
+    style_tag: str = Field(..., description="风格标签，从固定枚举中选取（如搞笑、治愈、日常）")

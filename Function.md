@@ -160,7 +160,7 @@
 
 - **配置**：`app.core.config` 新增 **`MILVUS_USER_GENERATED_COLLECTION_NAME`**（默认 `user_generated_embeddings`）。
 - **Milvus**：`vector.client.ensure_user_generated_collection(collection_name, dim)` 创建用户生成图专用集合；`vector.collection.insert_one_user_generated(embedding_id, vector, image_url, ocr_text, is_public)` 仅写入该集合。
-- **接口**：**`POST /api/v1/image/generate`**（JSON：`prompt` 必填，`image_urls` 可选，`is_public` 可选默认 0）。流程：生成图（当前占位）→ 上传 OSS → 使用场景（规则/占位）→ CLIP 向量化 → **仅写入 user_generated_embeddings** → 返回 `image_url`、`usage_scenario`、`embedding_id`。
+- **接口**：**`POST /api/v1/image/generate`**（JSON：`prompt` 必填，`image_urls` 可选，`is_public` 可选默认 0）。流程：生成图（占位或百炼）→ 上传 OSS → 使用场景（规则/占位）→ CLIP 向量化 → **仅写入 user_generated_embeddings** → 返回 `image_url`、`usage_scenario`、`embedding_id`。百炼支持通过 **BAILIAN_IMAGE_MODEL** 切换万相（wan2.6-image，流式+参考图）与千问文生图（qwen-image-*，同步、擅长画面内文字，参考图忽略）。
 - **路由**：`app.api.v1.image_gen` 已挂载到 `/api/v1`。
 
 **smart_meter 已实现**：

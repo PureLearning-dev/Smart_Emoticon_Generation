@@ -3,6 +3,7 @@ package com.purelearning.smart_meter.dto.auth;
 public class AuthUserView {
 
     private Long id;
+    private String username;
     private String openid;
     private String nickname;
     private String avatarUrl;
@@ -15,6 +16,14 @@ public class AuthUserView {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getOpenid() {

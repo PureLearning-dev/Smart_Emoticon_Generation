@@ -1,20 +1,26 @@
 package com.purelearning.smart_meter.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.purelearning.smart_meter.dto.plaza.PlazaArticleDetail;
 import com.purelearning.smart_meter.dto.plaza.PlazaContentDetailResponse;
 import com.purelearning.smart_meter.dto.plaza.PlazaContentListItem;
+import com.purelearning.smart_meter.dto.plaza.PlazaUserGeneratedItem;
 import com.purelearning.smart_meter.entity.PlazaArticle;
 import com.purelearning.smart_meter.entity.PlazaContent;
+import com.purelearning.smart_meter.entity.UserGeneratedImage;
 import com.purelearning.smart_meter.mapper.PlazaArticleMapper;
 import com.purelearning.smart_meter.mapper.PlazaContentMapper;
+import com.purelearning.smart_meter.mapper.UserGeneratedImageMapper;
 import com.purelearning.smart_meter.service.PlazaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * 首页文章推荐业务实现。
@@ -29,9 +35,11 @@ public class PlazaServiceImpl extends ServiceImpl<PlazaContentMapper, PlazaConte
     private static final int MAX_LIMIT = 50;
 
     private final PlazaArticleMapper plazaArticleMapper;
+    private final UserGeneratedImageMapper userGeneratedImageMapper;
 
-    public PlazaServiceImpl(PlazaArticleMapper plazaArticleMapper) {
+    public PlazaServiceImpl(PlazaArticleMapper plazaArticleMapper, UserGeneratedImageMapper userGeneratedImageMapper) {
         this.plazaArticleMapper = plazaArticleMapper;
+        this.userGeneratedImageMapper = userGeneratedImageMapper;
     }
 
     @Override
@@ -175,5 +183,68 @@ public class PlazaServiceImpl extends ServiceImpl<PlazaContentMapper, PlazaConte
             return "文章";
         }
         return "未知";
+    }
+
+    private static final int DEFAULT_PLAZA_CONTENTS_LIMIT = 10;
+
+    @Override
+    public List<PlazaUserGeneratedItem> listPublicUserGenerated(String keyword, String styleTag, int limit, int offset) {
+        int size = normalizeLimit(limit, DEFAULT_PLAZA_CONTENTS_LIMIT);
+        int safeOffset = Math.max(0, offset);
+        log.info(">>> [核心] PlazaService.listPublicUserGenerated keyword={} styleTag={} limit={} offset={}", keyword, styleTag, size, safeOffset);
+
+        LambdaQueryWrapper<UserGeneratedImage> wrapper = new LambdaQueryWrapper<UserGeneratedImage>()
+                .eq(UserGeneratedImage::getIsPublic, 1)
+                .eq(UserGeneratedImage::getGenerationStatus, 1)
+                .orderByDesc(UserGeneratedImage::getCreateTime)
+                .last("LIMIT " + size + " OFFSET " + safeOffset);
+        if (StringUtils.hasText(keyword)) {
+            wrapper.and(w -> w.like(UserGeneratedImage::getUsageScenario, keyword).or().like(UserGeneratedImage::getPromptText, keyword));
+        }
+        if (StringUtils.hasText(styleTag)) {
+            wrapper.like(UserGeneratedImage::getStyleTag, styleTag);
+        }
+        List<UserGeneratedImage> list = userGeneratedImageMapper.selectList(wrapper);
+        List<PlazaUserGeneratedItem> result = list.stream()
+                .map(e -> new PlazaUserGeneratedItem(
+                        e.getId(),
+                        e.getGeneratedImageUrl(),
+                        e.getUsageScenario(),
+                        e.getStyleTag(),
+                        e.getPromptText()
+                ))
+                .collect(Collectors.toList());
+        log.info("<<< [核心] PlazaService.listPublicUserGenerated count={}", result.size());
+        return result;
+    }
+
+    private static final int DEFAULT_MY_LIST_LIMIT = 10;
+
+    @Override
+    public List<PlazaUserGeneratedItem> listByUserId(Long userId, int limit, int offset) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("userId 必须为正整数");
+        }
+        int size = normalizeLimit(limit, DEFAULT_MY_LIST_LIMIT);
+        int safeOffset = Math.max(0, offset);
+        log.info(">>> [核心] PlazaService.listByUserId userId={} limit={} offset={}", userId, size, safeOffset);
+
+        LambdaQueryWrapper<UserGeneratedImage> wrapper = new LambdaQueryWrapper<UserGeneratedImage>()
+                .eq(UserGeneratedImage::getUserId, userId)
+                .eq(UserGeneratedImage::getGenerationStatus, 1)
+                .orderByDesc(UserGeneratedImage::getCreateTime)
+                .last("LIMIT " + size + " OFFSET " + safeOffset);
+        List<UserGeneratedImage> list = userGeneratedImageMapper.selectList(wrapper);
+        List<PlazaUserGeneratedItem> result = list.stream()
+                .map(e -> new PlazaUserGeneratedItem(
+                        e.getId(),
+                        e.getGeneratedImageUrl(),
+                        e.getUsageScenario(),
+                        e.getStyleTag(),
+                        e.getPromptText()
+                ))
+                .collect(Collectors.toList());
+        log.info("<<< [核心] PlazaService.listByUserId count={}", result.size());
+        return result;
     }
 }

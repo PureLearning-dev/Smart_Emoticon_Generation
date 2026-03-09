@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="card head-card">
+    <text class="title">注册</text>
+    <text class="subtitle">注册后即可登录使用生成图片、我的生成等功能</text>
+  </view>
+
+  <view class="card form-card">
+    <text class="label">账号</text>
+    <input
+      class="input"
+      value="{{username}}"
+      bindinput="onInputUsername"
+      placeholder="请输入账号（4～64 字符）"
+      placeholder-class="placeholder"
+    />
+    <text class="label">密码</text>
+    <input
+      class="input input-password"
+      value="{{password}}"
+      password
+      bindinput="onInputPassword"
+      placeholder="请输入密码"
+      placeholder-class="placeholder"
+    />
+    <text class="label">确认密码</text>
+    <input
+      class="input input-password"
+      value="{{passwordConfirm}}"
+      password
+      bindinput="onInputPasswordConfirm"
+      placeholder="请再次输入密码"
+      placeholder-class="placeholder"
+    />
+  </view>
+
+  <view class="card action-card">
+    <button
+      class="primary-btn"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+      bindtap="doRegister"
+    >注册</button>
+    <view class="login-link" bindtap="goLogin">已有账号？去登录</view>
+  </view>
+</view>

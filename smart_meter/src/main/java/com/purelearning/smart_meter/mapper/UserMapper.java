@@ -7,5 +7,7 @@ import org.apache.ibatis.annotations.Param;
 public interface UserMapper extends BaseMapper<User> {
 
     User selectByOpenid(@Param("openid") String openid);
+
+    User selectByUsername(@Param("username") String username);
 }
 

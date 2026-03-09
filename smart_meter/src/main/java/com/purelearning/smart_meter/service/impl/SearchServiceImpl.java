@@ -1,9 +1,10 @@
 package com.purelearning.smart_meter.service.impl;
 
-import com.purelearning.smart_meter.dto.search.SearchResultItem;
-import com.purelearning.smart_meter.entity.MemeAsset;
-import com.purelearning.smart_meter.service.MemeAssetService;
+import com.purelearning.smart_meter.dto.search.PlazaSearchResultItem;
+import com.purelearning.smart_meter.entity.UserGeneratedImage;
+import com.purelearning.smart_meter.mapper.UserGeneratedImageMapper;
 import com.purelearning.smart_meter.service.SearchService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,8 +27,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 搜索业务实现。
- * 调用 ai-kore 向量搜索，按 embedding_id 查 MySQL，保持相似度顺序返回。
+ * 搜索业务实现（公共广场）。
+ * 调用 ai-kore 公共广场向量搜索（user_generated_embeddings 且 is_public==1），
+ * 按 embedding_id 查 user_generated_images，保持相似度顺序返回。
  */
 @Service
 public class SearchServiceImpl implements SearchService {
@@ -36,35 +38,35 @@ public class SearchServiceImpl implements SearchService {
 
     private final RestTemplate restTemplate;
     private final String aiKoreBaseUrl;
-    private final MemeAssetService memeAssetService;
+    private final UserGeneratedImageMapper userGeneratedImageMapper;
 
     public SearchServiceImpl(
             RestTemplate restTemplate,
             @Value("${ai-kore.base-url}") String aiKoreBaseUrl,
-            MemeAssetService memeAssetService) {
+            UserGeneratedImageMapper userGeneratedImageMapper) {
         this.restTemplate = restTemplate;
         this.aiKoreBaseUrl = aiKoreBaseUrl.replaceAll("/$", "");
-        this.memeAssetService = memeAssetService;
+        this.userGeneratedImageMapper = userGeneratedImageMapper;
     }
 
     @Override
-    public List<SearchResultItem> searchByText(String query, int topK) {
+    public List<PlazaSearchResultItem> searchByText(String query, int topK) {
         log.info(">>> [核心] SearchService.searchByText query={} topK={}", query, topK);
         String url = aiKoreBaseUrl + "/api/v1/vector/search-text";
-        log.info("  - 调用 ai-kore POST {}", url);
+        log.info("  - 调用 ai-kore 公共广场 POST {}", url);
         Map<String, Object> request = Map.of("query", query, "top_k", topK);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
         ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
                 url, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-        List<SearchResultItem> items = mapVectorResultsToSearchItems(resp.getBody());
+        List<PlazaSearchResultItem> items = mapVectorResultsToPlazaItems(resp.getBody());
         log.info("<<< [核心] SearchService.searchByText count={}", items.size());
         return items;
     }
 
     @Override
-    public List<SearchResultItem> searchByImage(MultipartFile file, int topK) {
+    public List<PlazaSearchResultItem> searchByImage(MultipartFile file, int topK) {
         log.info(">>> [核心] SearchService.searchByImage file={} size={} topK={}",
                 file.getOriginalFilename(), file.getSize(), topK);
         String url = aiKoreBaseUrl + "/api/v1/vector/search-image/upload";
@@ -84,32 +86,20 @@ public class SearchServiceImpl implements SearchService {
             throw new RuntimeException("读取图片失败", e);
         }
 
-        log.info("  - 调用 ai-kore POST {} (multipart)", url);
+        log.info("  - 调用 ai-kore 公共广场 POST {} (multipart)", url);
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
                 url + "?top_k=" + topK, HttpMethod.POST, requestEntity, new ParameterizedTypeReference<>() {});
-        List<SearchResultItem> items = mapVectorResultsToSearchItems(resp.getBody());
+        List<PlazaSearchResultItem> items = mapVectorResultsToPlazaItems(resp.getBody());
         log.info("<<< [核心] SearchService.searchByImage count={}", items.size());
         return items;
     }
 
-    @Override
-    public List<SearchResultItem> searchByImageUrl(String url, int topK) {
-        log.info(">>> [核心] SearchService.searchByImageUrl url={} topK={}", url, topK);
-        String aiUrl = aiKoreBaseUrl + "/api/v1/vector/search-image";
-        Map<String, Object> request = Map.of("url", url, "top_k", topK);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        log.info("  - 调用 ai-kore POST {}", aiUrl);
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
-        ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
-                aiUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-        List<SearchResultItem> items = mapVectorResultsToSearchItems(resp.getBody());
-        log.info("<<< [核心] SearchService.searchByImageUrl count={}", items.size());
-        return items;
-    }
-
-    private List<SearchResultItem> mapVectorResultsToSearchItems(Map<String, Object> response) {
+    /**
+     * 将 ai-kore 返回的 results 按 embedding_id 回表 user_generated_images，
+     * 仅保留 generation_status=1、is_public=1 的记录，按 ai-kore 返回顺序组装 PlazaSearchResultItem。
+     */
+    private List<PlazaSearchResultItem> mapVectorResultsToPlazaItems(Map<String, Object> response) {
         if (response == null) {
             return List.of();
         }
@@ -118,28 +108,33 @@ public class SearchServiceImpl implements SearchService {
         if (results == null || results.isEmpty()) {
             return List.of();
         }
-        log.info("  - 按 embedding_id 批量查 MySQL 元数据");
+        log.info("  - 按 embedding_id 批量查 user_generated_images 元数据");
         List<String> embeddingIds = results.stream()
                 .map(r -> (String) r.get("embedding_id"))
                 .toList();
-        List<MemeAsset> assets = memeAssetService.lambdaQuery()
-                .in(MemeAsset::getEmbeddingId, embeddingIds)
-                .list();
-        Map<String, MemeAsset> byEmbeddingId = assets.stream()
-                .collect(Collectors.toMap(MemeAsset::getEmbeddingId, a -> a, (a, b) -> a));
+        List<UserGeneratedImage> images = userGeneratedImageMapper.selectList(
+                new LambdaQueryWrapper<UserGeneratedImage>()
+                        .in(UserGeneratedImage::getEmbeddingId, embeddingIds)
+                        .eq(UserGeneratedImage::getGenerationStatus, 1)
+                        .eq(UserGeneratedImage::getIsPublic, 1)
+        );
+        Map<String, UserGeneratedImage> byEmbeddingId = images.stream()
+                .collect(Collectors.toMap(UserGeneratedImage::getEmbeddingId, img -> img, (a, b) -> a));
 
-        List<SearchResultItem> out = new ArrayList<>();
+        List<PlazaSearchResultItem> out = new ArrayList<>();
         for (Map<String, Object> r : results) {
             String eid = (String) r.get("embedding_id");
             Object scoreObj = r.get("score");
             double score = scoreObj instanceof Number n ? n.doubleValue() : 0.0;
-            MemeAsset asset = byEmbeddingId.get(eid);
-            if (asset != null) {
-                out.add(new SearchResultItem(
-                        asset.getId(),
-                        asset.getFileUrl(),
-                        asset.getOcrText(),
-                        asset.getEmbeddingId(),
+            UserGeneratedImage img = byEmbeddingId.get(eid);
+            if (img != null) {
+                out.add(new PlazaSearchResultItem(
+                        img.getId(),
+                        img.getGeneratedImageUrl() != null ? img.getGeneratedImageUrl() : "",
+                        img.getPromptText() != null ? img.getPromptText() : "",
+                        img.getUsageScenario() != null ? img.getUsageScenario() : "",
+                        img.getStyleTag() != null ? img.getStyleTag() : "",
+                        img.getEmbeddingId(),
                         score
                 ));
             }

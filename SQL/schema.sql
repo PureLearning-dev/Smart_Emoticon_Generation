@@ -1,15 +1,22 @@
 -- 创建用户表（存储用户信息）
+-- 支持账号密码登录；openid 可选，用于后续微信小程序登录
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID，主键，自增',
-    openid VARCHAR(64) NOT NULL UNIQUE COMMENT '微信小程序唯一标识openid',
+    username VARCHAR(64) NOT NULL UNIQUE COMMENT '登录账号，唯一',
+    password_hash VARCHAR(255) NOT NULL COMMENT '密码密文（如 bcrypt/argon2），不可逆',
+    openid VARCHAR(64) NULL UNIQUE COMMENT '微信小程序 openid，可选，后续小程序登录用',
     nickname VARCHAR(100) COMMENT '用户昵称',
     avatar_url VARCHAR(255) COMMENT '用户头像URL地址',
     status TINYINT DEFAULT 1 COMMENT '用户状态：1正常，0禁用',
     user_type TINYINT DEFAULT 1 COMMENT '用户类型：1普通用户，2管理员',
     create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表';
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+    KEY idx_username (username),
+    KEY idx_openid (openid),
+    KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表（账号密码登录，openid 预留小程序）';
 
 -- 创建公共广场内容表（支持展示表情包/文章等公开内容）
 

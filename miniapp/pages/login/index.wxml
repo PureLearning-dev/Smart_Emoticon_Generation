@@ -1,22 +1,36 @@
 <view class="page">
-  <view class="card">
-    <text class="title">登录</text>
-    <text class="subtitle">支持微信真实登录与开发 Mock 登录</text>
+  <view class="card head-card">
+    <text class="title">智能表情包中心 · 登录</text>
+    <text class="subtitle">使用账号密码登录，登录后可使用生成图片、我的生成等功能</text>
   </view>
 
-  <view class="card">
-    <text class="label">开发 code（Mock 登录使用）</text>
-    <input class="input" value="{{code}}" bindinput="onInputCode" placeholder="例如 dev_001" placeholder-class="placeholder" />
-
-    <text class="label">昵称（可选）</text>
-    <input class="input" value="{{nickname}}" bindinput="onInputNickname" placeholder="请输入昵称" placeholder-class="placeholder" />
-
-    <text class="label">头像 URL（可选）</text>
-    <input class="input" value="{{avatarUrl}}" bindinput="onInputAvatar" placeholder="请输入头像地址" placeholder-class="placeholder" />
+  <view class="card form-card">
+    <text class="label">账号</text>
+    <input
+      class="input"
+      value="{{username}}"
+      bindinput="onInputUsername"
+      placeholder="请输入账号"
+      placeholder-class="placeholder"
+    />
+    <text class="label">密码</text>
+    <input
+      class="input input-password"
+      value="{{password}}"
+      password
+      bindinput="onInputPassword"
+      placeholder="请输入密码"
+      placeholder-class="placeholder"
+    />
   </view>
 
-  <view class="card">
-    <button class="primary-btn" loading="{{loading}}" bindtap="doWechatLogin">微信真实登录</button>
-    <button class="ghost-btn" loading="{{loading}}" bindtap="doMockLogin">开发 Mock 登录</button>
+  <view class="card action-card">
+    <button
+      class="primary-btn"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+      bindtap="doLogin"
+    >登录</button>
+    <view class="register-link" bindtap="goRegister">没有账号？去注册</view>
   </view>
 </view>

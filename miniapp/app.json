@@ -1,12 +1,15 @@
 {
   "pages": [
     "pages/home/index",
+    "pages/ai-generate/index",
     "pages/search/index",
     "pages/search-text/index",
     "pages/search-image/index",
+    "pages/generated-detail/index",
     "pages/detail/index",
     "pages/user/index",
     "pages/login/index",
+    "pages/register/index",
     "pages/plaza/index",
     "pages/my-creation/index",
     "pages/user/disclaimer",

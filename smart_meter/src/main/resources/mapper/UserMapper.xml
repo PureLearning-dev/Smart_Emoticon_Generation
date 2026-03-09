@@ -7,6 +7,8 @@
     <select id="selectByOpenid" resultType="com.purelearning.smart_meter.entity.User">
         SELECT
             id,
+            username,
+            password_hash,
             openid,
             nickname,
             avatar_url,
@@ -16,6 +18,23 @@
             update_time
         FROM users
         WHERE openid = #{openid}
+        LIMIT 1
+    </select>
+
+    <select id="selectByUsername" resultType="com.purelearning.smart_meter.entity.User">
+        SELECT
+            id,
+            username,
+            password_hash,
+            openid,
+            nickname,
+            avatar_url,
+            status,
+            user_type,
+            create_time,
+            update_time
+        FROM users
+        WHERE username = #{username}
         LIMIT 1
     </select>
 

@@ -1,5 +1,7 @@
 package com.purelearning.smart_meter.controller;
 
+import com.purelearning.smart_meter.dto.auth.LoginRequest;
+import com.purelearning.smart_meter.dto.auth.RegisterRequest;
 import com.purelearning.smart_meter.dto.auth.WechatLoginRequest;
 import com.purelearning.smart_meter.dto.auth.WechatLoginResponse;
 import com.purelearning.smart_meter.security.JwtService;
@@ -7,6 +9,7 @@ import com.purelearning.smart_meter.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Auth - 登录认证", description = "微信小程序登录与 JWT 令牌相关接口")
+@Tag(name = "Auth - 登录认证", description = "账号密码登录、注册与 JWT 令牌相关接口")
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
@@ -26,6 +29,38 @@ public class AuthController {
 
     public AuthController(AuthService authService) {
         this.authService = authService;
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "账号密码登录", description = "使用 username 与 password 登录，返回 JWT 与用户信息")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        log.info(">>> [接口] POST /api/auth/login username={}", request != null ? request.getUsername() : null);
+        try {
+            WechatLoginResponse resp = authService.login(request);
+            log.info("<<< [接口] POST /api/auth/login userId={}", resp.getUser() != null ? resp.getUser().getId() : null);
+            return ResponseEntity.ok(resp);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "注册", description = "注册新用户，成功后返回 JWT 与用户信息（注册即登录）")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        log.info(">>> [接口] POST /api/auth/register username={}", request != null ? request.getUsername() : null);
+        try {
+            WechatLoginResponse resp = authService.register(request);
+            log.info("<<< [接口] POST /api/auth/register userId={}", resp.getUser() != null ? resp.getUser().getId() : null);
+            return ResponseEntity.ok(resp);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/health")
+    @Operation(summary = "认证接口可用性检查", description = "用于确认当前运行的后端是否包含登录/注册接口，避免 404 因旧版本未重启导致")
+    public ResponseEntity<Map<String, Object>> authHealth() {
+        return ResponseEntity.ok(Map.of("ok", true, "auth", "login,register,wechat"));
     }
 
     @PostMapping("/wechat/login")

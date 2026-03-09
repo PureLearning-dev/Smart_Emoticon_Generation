@@ -60,3 +60,35 @@ OCR_MAX_DIMENSION = _get_int("OCR_MAX_DIMENSION", 1024)
 # ======================== smart_meter 配置 ========================
 # 主业务服务地址，用于管线完成后写入 meme_assets 元数据
 SMART_METER_BASE_URL = _get("SMART_METER_BASE_URL", "http://127.0.0.1:8080").rstrip("/")
+
+# ======================== 阿里云百炼（图像生成 API，实际为 DashScope 万相/千问接口）========================
+# 百炼 API Key 即 DashScope API Key，用于鉴权。未配置时 /api/v1/image/generate 使用占位图。
+# 北京地域完整 URL（文档）：https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
+# 新加坡：https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
+# 弗吉尼亚：https://dashscope-us.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation
+BAILIAN_API_KEY = _get("BAILIAN_API_KEY")
+# 万相（写实/艺术/参考图）：wan2.6-image；千问文生图（带文字的海报、排版）：qwen-image-2.0-pro 等
+BAILIAN_IMAGE_MODEL = _get("BAILIAN_IMAGE_MODEL", "wan2.6-image")
+BAILIAN_BASE_URL = _get(
+    "BAILIAN_BASE_URL",
+    "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation",
+)
+# 仅当 BAILIAN_IMAGE_MODEL 为 qwen-image-* 时生效
+BAILIAN_QWEN_SIZE = _get("BAILIAN_QWEN_SIZE", "1024*1024")
+BAILIAN_QWEN_NEGATIVE_PROMPT = _get(
+    "BAILIAN_QWEN_NEGATIVE_PROMPT",
+    "低分辨率，低画质，文字模糊，扭曲。",
+)
+
+# ======================== 百炼文本大模型（用于生成 usage_scenario + style_tag）========================
+# 复用 BAILIAN_API_KEY；未配置或调用失败时降级为规则/默认「日常」
+BAILIAN_LLM_MODEL = _get("BAILIAN_LLM_MODEL", "qwen-turbo")
+BAILIAN_LLM_BASE_URL = _get(
+    "BAILIAN_LLM_BASE_URL",
+    "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
+)
+# style_tag 固定枚举，逗号分隔；大模型只能从该列表中选取
+STYLE_TAG_LIST = _get(
+    "STYLE_TAG_LIST",
+    "搞笑,治愈,职场,情侣,朋友,节日,日常,萌系,复古,简约,毒鸡汤,励志",
+)

@@ -2,6 +2,7 @@ package com.purelearning.smart_meter.service;
 
 import com.purelearning.smart_meter.dto.image.ImageGenerateRequest;
 import com.purelearning.smart_meter.dto.image.ImageGenerateResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 生成图片业务接口。
@@ -18,4 +19,12 @@ public interface ImageGenerateService {
      * @throws RuntimeException         当 ai-kore 调用失败或写库失败
      */
     ImageGenerateResponse generate(ImageGenerateRequest request);
+
+    /**
+     * 上传参考图到 ai-kore（OSS），返回公网 URL，供生成接口 imageUrls 使用。
+     *
+     * @param file 参考图文件（multipart）
+     * @return 公网可访问的 URL
+     */
+    String uploadReferenceImage(MultipartFile file);
 }

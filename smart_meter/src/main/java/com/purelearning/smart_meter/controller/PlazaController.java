@@ -2,6 +2,7 @@ package com.purelearning.smart_meter.controller;
 
 import com.purelearning.smart_meter.dto.plaza.PlazaContentDetailResponse;
 import com.purelearning.smart_meter.dto.plaza.PlazaContentListItem;
+import com.purelearning.smart_meter.dto.plaza.PlazaUserGeneratedItem;
 import com.purelearning.smart_meter.service.PlazaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -67,5 +68,21 @@ public class PlazaController {
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage(), e);
         }
+    }
+
+    @GetMapping("/contents")
+    @Operation(
+            summary = "公共广场用户生成图列表",
+            description = "分页返回 user_generated_images 中 is_public=1 且 generation_status=1 的记录，支持 keyword、styleTag 模糊筛选。"
+    )
+    public List<PlazaUserGeneratedItem> listPlazaContents(
+            @Parameter(description = "关键词，模糊匹配使用场景/提示词") @RequestParam(required = false) String keyword,
+            @Parameter(description = "风格标签，模糊匹配") @RequestParam(required = false) String styleTag,
+            @Parameter(description = "每页条数") @RequestParam(defaultValue = "10") int limit,
+            @Parameter(description = "偏移量") @RequestParam(defaultValue = "0") int offset) {
+        log.info(">>> [接口] GET /api/plaza/contents keyword={} styleTag={} limit={} offset={}", keyword, styleTag, limit, offset);
+        List<PlazaUserGeneratedItem> items = plazaService.listPublicUserGenerated(keyword, styleTag, limit, offset);
+        log.info("<<< [接口] GET /api/plaza/contents count={}", items.size());
+        return items;
     }
 }

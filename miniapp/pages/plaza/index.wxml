@@ -1,31 +1,74 @@
 <view class="page">
-  <view class="card">
+  <view class="card head-card">
     <text class="title">公共广场</text>
-    <text class="subtitle">浏览平台公开推荐内容</text>
+    <text class="subtitle">浏览用户公开生成的表情包</text>
   </view>
 
-  <view class="card">
-    <view class="section-head">
-      <text class="section-title">广场内容</text>
-      <text class="section-desc">静态演示</text>
+  <view class="card search-card">
+    <view class="search-row">
+      <input
+        class="search-input"
+        placeholder="搜索使用场景或描述"
+        placeholder-class="placeholder"
+        value="{{searchInput}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+        confirm-type="search"
+      />
+      <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
+    </view>
+  </view>
+
+  <view class="card tags-card">
+    <scroll-view scroll-x class="tags-scroll" show-scrollbar="{{false}}">
+      <view class="tags-inner">
+        <view
+          class="tag-item {{selectedStyleTag === '' && item === '全部' ? 'tag-item-active' : ''}} {{selectedStyleTag === item ? 'tag-item-active' : ''}}"
+          wx:for="{{styleTags}}"
+          wx:key="*this"
+          data-tag="{{item}}"
+          bindtap="onSelectStyleTag"
+        >
+          <text>{{item}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="card list-card">
+    <view wx:if="{{loading}}" class="state-wrap">加载中...</view>
+    <view wx:elif="{{!loading && list.length === 0}}" class="state-wrap">暂无公开内容</view>
+    <view wx:else class="waterfall">
+      <view class="waterfall-inner">
+        <view
+          class="plaza-card"
+          wx:for="{{list}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="onGoDetail"
+        >
+          <image
+            class="card-image"
+            src="{{item.generatedImageUrl}}"
+            mode="widthFix"
+          />
+          <view class="card-body">
+            <text class="card-usage">{{item.usageScenario || '日常'}}</text>
+            <text class="card-style">{{item.styleTag || '日常'}}</text>
+          </view>
+        </view>
+      </view>
     </view>
 
-    <view class="list">
-      <view
-        class="list-item"
-        wx:for="{{plazaList}}"
-        wx:key="id"
-        data-item="{{item}}"
-        bindtap="onTapPlazaItem"
-      >
-        <view class="top-row">
-          <text class="item-title">{{item.title}}</text>
-          <text class="item-type">{{item.type}}</text>
-        </view>
-        <text class="item-summary">{{item.summary}}</text>
-        <text class="item-meta">{{item.author}}</text>
-        <view class="action-btn">查看内容</view>
-      </view>
+    <view class="load-more-wrap">
+      <button
+        wx:if="{{hasMore && !loading && !loadingMore && list.length > 0}}"
+        type="default"
+        class="load-more-btn"
+        bindtap="onLoadMore"
+      >加载更多</button>
+      <text wx:elif="{{loadingMore}}" class="load-more-text">加载中…</text>
+      <text wx:elif="{{!hasMore && list.length > 0}}" class="load-more-text">没有更多了</text>
     </view>
   </view>
 </view>

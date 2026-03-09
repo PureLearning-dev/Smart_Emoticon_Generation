@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,6 +93,51 @@ public class AiKoreTestController {
                     .body(Map.of(
                             "error", "Python AI 服务不可达",
                             "message", e.getMessage()
+                    ));
+        }
+    }
+
+    /**
+     * 测试单张图片 URL 的离线入库管线。
+     * 接收图片 URL，调用 ai-kore 的 /api/v1/crawl/process-image 接口，
+     * 触发「下载 → OSS → CLIP → OCR → Milvus → MySQL」完整处理流程。
+     *
+     * @param url 待处理的图片 URL，将传递给 ai-kore 管线
+     * @return ai-kore 返回的 JSON 结果，或错误信息
+     */
+    @GetMapping("/ai-crawl-process-image")
+    @Operation(
+            summary = "测试图片 URL 离线入库管线",
+            description = "将图片 URL 转发到 ai-kore 的 /api/v1/crawl/process-image 接口，触发下载→OSS→CLIP→OCR→Milvus→MySQL 全流程，用于联调与验证。"
+    )
+    public ResponseEntity<?> testCrawlProcessImage(
+            @Parameter(description = "待处理的图片 URL，将传递给 ai-kore 管线")
+            @RequestParam String url) {
+        log.info(">>> [接口] GET /api/test/ai-crawl-process-image url={}", url);
+        if (url == null || url.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error", "url 不能为空",
+                            "hint", "请在查询参数中传入 ?url={图片地址}"
+                    ));
+        }
+        String target = aiKoreBaseUrl + "/api/v1/crawl/process-image";
+        try {
+            Map<String, Object> request = Map.of("url", url);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = restTemplate.postForObject(target, entity, Map.class);
+            log.info("<<< [接口] GET /api/test/ai-crawl-process-image success=true");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.warn("<<< [接口] GET /api/test/ai-crawl-process-image failed: {}", e.getMessage());
+            return ResponseEntity.status(503)
+                    .body(Map.of(
+                            "error", "调用 ai-kore 爬虫管线失败",
+                            "message", e.getMessage(),
+                            "hint", "请确认 ai-kore 已启动且 /api/v1/crawl/process-image 接口可用"
                     ));
         }
     }

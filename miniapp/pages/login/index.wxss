@@ -1,7 +1,7 @@
 .page {
   min-height: 100vh;
   padding: 24rpx;
-  background: #f7f8fa;
+  background: #F7F8FA;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -9,41 +9,51 @@
 }
 
 .card {
-  background: #ffffff;
+  background: #FFFFFF;
   border-radius: 16rpx;
   padding: 24rpx;
   box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
 }
 
-.title {
+.head-card .title {
   font-size: 36rpx;
   color: #333333;
   font-weight: 600;
 }
 
-.subtitle {
-  margin-top: 20rpx;
+.head-card .subtitle {
+  margin-top: 12rpx;
   display: block;
-  font-size: 30rpx;
+  font-size: 26rpx;
   color: #666666;
+  line-height: 1.5;
 }
 
-.label {
-  margin-top: 20rpx;
+.form-card .label {
   display: block;
-  font-size: 24rpx;
-  color: #666666;
+  font-size: 28rpx;
+  color: #333333;
+  margin-bottom: 12rpx;
+  margin-top: 20rpx;
+}
+
+.form-card .label:first-child {
+  margin-top: 0;
 }
 
 .input {
-  margin-top: 20rpx;
   height: 80rpx;
   border-radius: 16rpx;
-  border: 2rpx solid #e9edf3;
+  border: 2rpx solid #E9EDF3;
+  background: #FFFFFF;
   box-sizing: border-box;
   padding: 0 20rpx;
   font-size: 28rpx;
   color: #333333;
+}
+
+.input-password {
+  margin-top: 0;
 }
 
 .placeholder {
@@ -51,8 +61,15 @@
   font-size: 24rpx;
 }
 
-.primary-btn,
-.ghost-btn {
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.primary-btn {
+  width: 100%;
   height: 80rpx;
   border-radius: 16rpx;
   font-size: 28rpx;
@@ -61,17 +78,17 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+  background: #07C160;
+  color: #FFFFFF;
 }
 
-.primary-btn {
-  background: #07c160;
-  color: #ffffff;
+.primary-btn[disabled] {
+  opacity: 0.7;
 }
 
-.ghost-btn {
-  margin-top: 20rpx;
-  background: rgba(7, 193, 96, 0.12);
-  color: #07c160;
+.register-link {
+  font-size: 28rpx;
+  color: #07C160;
 }
 
 button::after {

@@ -1,46 +1,25 @@
 /**
- * 登录页逻辑
- * 职责：支持真实微信登录与开发 Mock 登录
+ * 登录页
+ * 职责：账号密码登录，登录成功后保存 token 与用户信息并返回
  */
-const { login, loginMock } = require("../../services/auth");
+const { loginByPassword } = require("../../services/auth");
 const { setUserState } = require("../../store/user");
 
 Page({
   data: {
-    code: "dev_001",
-    nickname: "",
-    avatarUrl: "",
+    username: "",
+    password: "",
     loading: false
   },
 
-  /**
-   * 输入开发 code
-   * @param {object} e 输入事件
-   */
-  onInputCode(e) {
-    this.setData({ code: e.detail.value || "" });
+  onInputUsername(e) {
+    this.setData({ username: (e.detail && e.detail.value) || "" });
   },
 
-  /**
-   * 输入昵称
-   * @param {object} e 输入事件
-   */
-  onInputNickname(e) {
-    this.setData({ nickname: e.detail.value || "" });
+  onInputPassword(e) {
+    this.setData({ password: (e.detail && e.detail.value) || "" });
   },
 
-  /**
-   * 输入头像 URL
-   * @param {object} e 输入事件
-   */
-  onInputAvatar(e) {
-    this.setData({ avatarUrl: e.detail.value || "" });
-  },
-
-  /**
-   * 处理登录成功后的状态缓存与页面跳转
-   * @param {object} result 登录返回结果
-   */
   handleLoginSuccess(result) {
     setUserState(result.token || "", result.user || null);
     wx.showToast({ title: "登录成功", icon: "success" });
@@ -50,61 +29,37 @@ Page({
   },
 
   /**
-   * 真实微信登录流程
+   * 账号密码登录
    */
-  doWechatLogin() {
-    this.setData({ loading: true });
-
-    wx.login({
-      success: async (res) => {
-        if (!res.code) {
-          wx.showToast({ title: "wx.login 失败", icon: "none" });
-          this.setData({ loading: false });
-          return;
-        }
-
-        try {
-          const result = await login({
-            code: res.code,
-            nickname: this.data.nickname || "",
-            avatarUrl: this.data.avatarUrl || ""
-          });
-          this.handleLoginSuccess(result);
-        } catch (e) {
-          // request 层已处理错误 toast
-        } finally {
-          this.setData({ loading: false });
-        }
-      },
-      fail: () => {
-        wx.showToast({ title: "调用微信登录失败", icon: "none" });
-        this.setData({ loading: false });
-      }
-    });
-  },
-
-  /**
-   * 开发 Mock 登录流程
-   */
-  async doMockLogin() {
-    const code = (this.data.code || "").trim();
-    if (!code) {
-      wx.showToast({ title: "请输入开发 code", icon: "none" });
+  async doLogin() {
+    const username = (this.data.username || "").trim();
+    const password = this.data.password || "";
+    if (!username) {
+      wx.showToast({ title: "请输入账号", icon: "none" });
+      return;
+    }
+    if (!password) {
+      wx.showToast({ title: "请输入密码", icon: "none" });
       return;
     }
 
     this.setData({ loading: true });
     try {
-      const result = await loginMock({
-        code,
-        nickname: this.data.nickname || "",
-        avatarUrl: this.data.avatarUrl || ""
-      });
+      const result = await loginByPassword({ username, password });
       this.handleLoginSuccess(result);
     } catch (e) {
-      // request 层已处理错误 toast
+      // 错误已在 request 层 toast（如 401 用户名或密码错误）
     } finally {
       this.setData({ loading: false });
     }
+  },
+
+  /**
+   * 去注册页
+   */
+  goRegister() {
+    wx.navigateTo({
+      url: "/pages/register/index"
+    });
   }
 });
