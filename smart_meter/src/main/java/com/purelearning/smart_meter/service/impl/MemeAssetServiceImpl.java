@@ -50,6 +50,9 @@ public class MemeAssetServiceImpl extends ServiceImpl<MemeAssetMapper, MemeAsset
         asset.setTitle(request.title() != null ? request.title() : "");
         asset.setDescription(request.description() != null ? request.description() : "");
         asset.setStyleTag(request.styleTag() != null ? request.styleTag() : "");
+        String usageScenario = request.usageScenario() != null ? request.usageScenario() : "";
+        asset.setUsageScenario(usageScenario);
+        log.info("  - usageScenario 写入值: [{}]", usageScenario);
         asset.setEmbeddingId(request.embeddingId());
         asset.setSourceType(request.effectiveSourceType());
         asset.setSource(request.effectiveSource());

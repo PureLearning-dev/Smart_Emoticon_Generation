@@ -92,3 +92,17 @@ STYLE_TAG_LIST = _get(
     "STYLE_TAG_LIST",
     "搞笑,治愈,职场,情侣,朋友,节日,日常,萌系,复古,简约,毒鸡汤,励志",
 )
+
+# 视觉大模型（图片 URL → 元数据，爬虫入库管线）；复用 BAILIAN_API_KEY
+DASHSCOPE_VL_BASE_URL = _get("DASHSCOPE_VL_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")
+DASHSCOPE_VL_MODEL = _get("DASHSCOPE_VL_MODEL", "qwen-vl-plus")
+
+
+def _get_float(key: str, default: float = 0.0) -> float:
+    try:
+        return float(_get(key, str(default)))
+    except ValueError:
+        return default
+
+
+DASHSCOPE_VL_TIMEOUT = _get_float("DASHSCOPE_VL_TIMEOUT", 30.0)

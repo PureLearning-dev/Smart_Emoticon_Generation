@@ -37,6 +37,7 @@ def save_to_mysql(
     title: Optional[str] = None,
     description: Optional[str] = None,
     style_tag: Optional[str] = None,
+    usage_scenario: Optional[str] = None,
     source_type: int = 1,
     source: str = "crawl",
 ) -> Optional[Dict[str, Any]]:
@@ -51,6 +52,7 @@ def save_to_mysql(
         title: 可选，表情包标题
         description: 可选，图片语义描述信息
         style_tag: 可选，风格标签（如搞笑、情侣、动漫等）
+        usage_scenario: 可选，使用场景（如职场、情侣、朋友、节日、日常）
         source_type: 来源类型，默认 1（系统采集）
         source: 图片来源，默认 "crawl"
 
@@ -66,6 +68,7 @@ def save_to_mysql(
         "title": title if title is not None else "",
         "description": description if description is not None else "",
         "styleTag": style_tag if style_tag is not None else "",
+        "usageScenario": usage_scenario if usage_scenario is not None else "",
         "sourceType": source_type,
         "source": source,
     }

@@ -35,6 +35,11 @@ except ImportError:
     save_to_mysql = None
 
 try:
+    from pipeline.vision_metadata import get_metadata_from_image_url
+except ImportError:
+    get_metadata_from_image_url = None
+
+try:
     from app.core.config import MILVUS_COLLECTION_NAME, OCR_MAX_DIMENSION
     from app.core.logger import get_logger
 except ImportError:
@@ -162,10 +167,22 @@ def process_single_image(
             logger.info("已写入 Milvus: %s", embedding_id)
 
         # 7. 写入 MySQL meme_assets（供搜索时查元数据，调用 smart_meter 的 POST /api/meme-assets/from-pipeline）
-        # 简单实现：title 取 OCR 前 30 字，description 用 OCR 全文，style_tag 暂空（后续可升级 LLM）
+        # 优先使用视觉大模型根据图片 URL 返回的元数据；未配置或失败时用默认
         title = (ocr_text[:30] + "…") if len(ocr_text) > 30 else (ocr_text or "未命名")
         description = ocr_text
         style_tag = ""
+        usage_scenario = "日常"
+        if get_metadata_from_image_url:
+            meta = get_metadata_from_image_url(image_url)
+            if meta:
+                title = meta.get("title", title)
+                if meta.get("ocr_text"):
+                    ocr_text = meta["ocr_text"]
+                    result["ocr_text"] = ocr_text
+                description = meta.get("description", description)
+                usage_scenario = meta.get("usage_scenario", usage_scenario)
+                style_tag = meta.get("style_tag", style_tag)
+                logger.info("已使用视觉大模型元数据: title=%s usage_scenario=%s style_tag=%s", title[:20], usage_scenario, style_tag)
 
         if save_to_mysql:
             logger.info("调用 smart_meter 写入 MySQL")
@@ -177,6 +194,7 @@ def process_single_image(
                 title=title,
                 description=description,
                 style_tag=style_tag,
+                usage_scenario=usage_scenario,
                 source_type=1,
                 source=url[:100] if url else "crawl",
             )

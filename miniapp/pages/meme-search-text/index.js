@@ -1,8 +1,8 @@
 /**
- * 文本搜图页
- * 职责：仅支持关键词搜索，展示结果列表，支持带 keyword 进入时自动搜索
+ * 素材库文本搜图页
+ * 职责：调用 /api/meme-search 接口按文本在 meme_assets 中检索表情包素材
  */
-const { searchByText } = require("../../services/search");
+const { searchMemeByText } = require("../../services/memeSearch");
 
 const PAGE_SIZE = 10;
 
@@ -17,9 +17,9 @@ Page({
   },
 
   onLoad(options) {
-    const keyword = options.keyword ? decodeURIComponent(options.keyword) : "";
+    const keyword = options && options.keyword ? decodeURIComponent(options.keyword) : "";
     this.setData({ keyword });
-    if (keyword.trim()) {
+    if (keyword && keyword.trim()) {
       this.doSearch();
     }
   },
@@ -28,9 +28,6 @@ Page({
     this.setData({ keyword: e.detail.value || "" });
   },
 
-  /**
-   * 开始搜索（按钮点击）
-   */
   onSearch() {
     const keyword = (this.data.keyword || "").trim();
     if (!keyword) {
@@ -40,22 +37,19 @@ Page({
     this.doSearch();
   },
 
-  /**
-   * 执行文本搜索
-   */
   async doSearch() {
     const keyword = (this.data.keyword || "").trim();
     if (!keyword) return;
 
     this.setData({ loading: true, error: false, hasSearched: true, list: [] });
     try {
-      const results = await searchByText(keyword, PAGE_SIZE);
+      const results = await searchMemeByText(keyword, PAGE_SIZE);
       const arr = Array.isArray(results) ? results : [];
       const mapped = arr.map(item => ({
         id: item.id,
-        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
-        usageScenario: item.usageScenario || item.promptText || item.ocrText || "",
-        styleTag: item.styleTag || "日常"
+        generatedImageUrl: item.fileUrl,
+        usageScenario: item.usageScenario || item.ocrText || "",
+        styleTag: item.styleTag || "素材库"
       }));
       this.setData({
         results: arr,
@@ -63,28 +57,26 @@ Page({
         loading: false
       });
     } catch (e) {
+      // 统一错误提示已在 request 封装层处理
       this.setData({ loading: false, error: true });
     }
   },
 
-  /**
-   * 触底：当前接口无分页，仅提示暂无更多
-   */
   onReachBottom() {
     if (this.data.results.length >= PAGE_SIZE) {
       wx.showToast({ title: "暂无更多", icon: "none" });
     }
   },
 
-  /**
-   * 点击结果卡片进入详情
-   */
-  goDetail(e) {
+  onGoDetail(e) {
     const id = e.currentTarget.dataset.id || "";
-    if (!id) return;
+    const fileUrl = e.currentTarget.dataset.fileUrl || "";
+    const ocrTextRaw = e.currentTarget.dataset.ocrText || "";
+    const url = fileUrl ? encodeURIComponent(fileUrl) : "";
+    const ocrText = ocrTextRaw ? encodeURIComponent(ocrTextRaw) : "";
     wx.navigateTo({
-      // 复用生成图详情页的卡片与信息布局
-      url: `/pages/generated-detail/index?id=${encodeURIComponent(id)}`
+      url: `/pages/detail/index?id=${id}&fileUrl=${url}&ocrText=${ocrText}`
     });
   }
 });
+

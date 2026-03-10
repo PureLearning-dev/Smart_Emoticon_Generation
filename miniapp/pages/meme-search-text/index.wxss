@@ -15,41 +15,22 @@
   box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
 }
 
-.title {
+.head-card .title {
   font-size: 36rpx;
   color: #333333;
   font-weight: 600;
 }
 
-.subtitle {
+.head-card .subtitle {
   margin-top: 20rpx;
   display: block;
   font-size: 30rpx;
   color: #666666;
 }
 
-.mode-row {
-  margin-top: 20rpx;
-  display: flex;
-  gap: 20rpx;
-}
-
-.mode-btn {
+.list-card {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-  color: #666666;
-  background: #f7f8fa;
-  border-radius: 16rpx;
-  height: 80rpx;
-}
-
-.mode-btn-active {
-  background: rgba(7, 193, 96, 0.12);
-  color: #07c160;
-  font-weight: 600;
+  min-height: 200rpx;
 }
 
 .search-panel {
@@ -76,7 +57,7 @@
   margin-top: 20rpx;
   height: 80rpx;
   border-radius: 16rpx;
-  background: #07c160;
+  background: #FE2C55;
   color: #ffffff;
   font-size: 28rpx;
   border: none;
@@ -84,25 +65,6 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-}
-
-.upload-card {
-  border-radius: 16rpx;
-  background: #f7f8fa;
-  padding: 20rpx;
-}
-
-.upload-tip {
-  display: block;
-  font-size: 28rpx;
-  color: #333333;
-}
-
-.helper {
-  margin-top: 20rpx;
-  display: block;
-  font-size: 24rpx;
-  color: #999999;
 }
 
 .section-head {
@@ -122,16 +84,19 @@
   color: #999999;
 }
 
-.state-text {
-  margin-top: 24rpx;
+.state-wrap {
   text-align: center;
-  font-size: 24rpx;
+  padding: 60rpx 0;
+  font-size: 28rpx;
   color: #999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
 }
 
-.list-card {
-  flex: 1;
-  min-height: 200rpx;
+.state-error {
+  color: #ee0a24;
 }
 
 .waterfall {
@@ -187,3 +152,4 @@
 button::after {
   border: none;
 }
+

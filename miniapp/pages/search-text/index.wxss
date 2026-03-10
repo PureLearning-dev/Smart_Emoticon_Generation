@@ -15,17 +15,22 @@
   box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
 }
 
-.title {
+.head-card .title {
   font-size: 36rpx;
   color: #333333;
   font-weight: 600;
 }
 
-.subtitle {
-  margin-top: 8rpx;
+.head-card .subtitle {
+  margin-top: 20rpx;
   display: block;
-  font-size: 24rpx;
+  font-size: 30rpx;
   color: #666666;
+}
+
+.list-card {
+  flex: 1;
+  min-height: 200rpx;
 }
 
 .search-panel {
@@ -80,55 +85,68 @@
 }
 
 .state-wrap {
-  padding: 32rpx 0;
   text-align: center;
-}
-
-.state-text {
-  font-size: 24rpx;
+  padding: 60rpx 0;
+  font-size: 28rpx;
   color: #999999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
 }
 
 .state-error {
   color: #ee0a24;
 }
 
-.list {
-  margin-top: 20rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.list-item {
-  border-radius: 16rpx;
-  border: 2rpx solid #f0f2f5;
-  background: #ffffff;
-  padding: 20rpx;
-}
-
-.cover {
+.waterfall {
   width: 100%;
-  height: 260rpx;
-  border-radius: 16rpx;
-  display: block;
 }
 
-.item-content {
-  margin-top: 20rpx;
+.waterfall-inner {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 20rpx;
 }
 
-.item-title {
-  font-size: 28rpx;
-  color: #333333;
+.plaza-card {
+  width: calc(50% - 10rpx);
+  border-radius: 16rpx;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(31, 35, 41, 0.08);
 }
 
-.item-text {
-  font-size: 24rpx;
-  color: #666666;
+.card-image {
+  width: 100%;
+  display: block;
+  background: #f0f0f0;
+}
+
+.card-body {
+  padding: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.card-usage {
+  font-size: 26rpx;
+  color: #333333;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-style {
+  font-size: 22rpx;
+  color: #FE2C55;
+  background: rgba(254, 44, 85, 0.1);
+  border-radius: 999rpx;
+  padding: 6rpx 14rpx;
+  align-self: flex-start;
 }
 
 button::after {

@@ -15,7 +15,8 @@ Page({
     imageUrl: "",
     imagePath: "",
     loading: false,
-    results: []
+    results: [],
+    list: []
   },
 
   /**
@@ -40,7 +41,8 @@ Page({
     const mode = e.currentTarget.dataset.mode;
     this.setData({
       mode,
-      results: []
+      results: [],
+      list: []
     });
   },
 
@@ -70,10 +72,17 @@ Page({
       return;
     }
 
-    this.setData({ loading: true });
+    this.setData({ loading: true, list: [] });
     try {
       const results = await searchByText(keyword, 10);
-      this.setData({ results: Array.isArray(results) ? results : [] });
+      const arr = Array.isArray(results) ? results : [];
+      const mapped = arr.map(item => ({
+        id: item.id,
+        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
+        usageScenario: item.usageScenario || item.promptText || item.ocrText || "",
+        styleTag: item.styleTag || "日常"
+      }));
+      this.setData({ results: arr, list: mapped });
     } catch (e) {
       // 错误 toast 在 request 层已处理
     } finally {
@@ -91,10 +100,17 @@ Page({
       return;
     }
 
-    this.setData({ loading: true });
+    this.setData({ loading: true, list: [] });
     try {
       const results = await searchByImageUrl(url, 10);
-      this.setData({ results: Array.isArray(results) ? results : [] });
+      const arr = Array.isArray(results) ? results : [];
+      const mapped = arr.map(item => ({
+        id: item.id,
+        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
+        usageScenario: item.usageScenario || item.promptText || item.usageScenario || "",
+        styleTag: item.styleTag || "日常"
+      }));
+      this.setData({ results: arr, list: mapped });
     } catch (e) {
       // 错误 toast 在 request 层已处理
     } finally {
@@ -115,10 +131,17 @@ Page({
         if (!filePath) {
           return;
         }
-        this.setData({ imagePath: filePath, loading: true });
+        this.setData({ imagePath: filePath, loading: true, list: [] });
         try {
           const results = await searchByImageFile(filePath, 10);
-          this.setData({ results: Array.isArray(results) ? results : [] });
+          const arr = Array.isArray(results) ? results : [];
+          const mapped = arr.map(item => ({
+            id: item.id,
+            generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
+            usageScenario: item.usageScenario || item.promptText || item.usageScenario || "",
+            styleTag: item.styleTag || "日常"
+          }));
+          this.setData({ results: arr, list: mapped });
         } catch (e) {
           // 错误 toast 在 request 层已处理
         } finally {
@@ -151,12 +174,10 @@ Page({
    */
   goDetail(e) {
     const id = e.currentTarget.dataset.id || "";
-    const fileUrl = e.currentTarget.dataset.fileUrl || "";
-    const ocrTextRaw = e.currentTarget.dataset.ocrText || "";
-    const url = fileUrl ? encodeURIComponent(fileUrl) : "";
-    const ocrText = ocrTextRaw ? encodeURIComponent(ocrTextRaw) : "";
+    if (!id) return;
     wx.navigateTo({
-      url: `/pages/detail/index?id=${id}&fileUrl=${url}&ocrText=${ocrText}`
+      // 与文本搜图一致：复用生成图详情页的卡片与信息布局
+      url: `/pages/generated-detail/index?id=${encodeURIComponent(id)}`
     });
   }
 });

@@ -14,6 +14,7 @@
             description,
             content_text,
             style_tag,
+            usage_scenario,
             source_type,
             source,
             embedding_id,

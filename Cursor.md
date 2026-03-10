@@ -296,6 +296,12 @@ smart_meter/                                    # Spring Boot 主业务微服务
 - **文字搜图**与**图搜图**属于公共广场能力，**仅**检索「用户生成图」：Milvus **user_generated_embeddings**（且 **is_public == 1**）+ MySQL **user_generated_images**（按 embedding_id 回表）。
 - 不检索爬虫/入库的 meme_embeddings、meme_assets。实现与接口约定见 **docs/PROMPT_PLAZA_SEARCH_USER_GENERATED_ONLY.md**。
 
+### 小程序搜索入口与数据源（重要）
+
+- **首页「文本搜图」**：跳转 **pages/meme-search-text/index**，使用 **services/memeSearch.js** → **GET /api/meme-search** → 后端 **MemeSearchController** → ai-kore **meme_embeddings** → 回表 **meme_assets**（素材库/爬虫表）。结果条数受爬虫表数据量约束。
+- **首页「图搜图」**：跳转 **pages/meme-search-image/index**，使用 **services/memeSearch.js** → **POST /api/meme-search/image**（上传）→ 同上，数据源也是 **meme_assets**。
+- **公共广场搜图（用户生成表）**：保留为独立入口，页面 **pages/search-text**、**pages/search-image** 调用 **GET /api/search**、**POST /api/search/image**，数据源 **user_generated_embeddings** + **user_generated_images**；可从公共广场页内或其它入口进入，不在首页默认搜图路径。
+
 ### 微信小程序 miniapp
 
 - **风格**：小红书风格，主色 `#FE2C55`，卡片圆角 16rpx，背景 `#F7F8FA`。
@@ -303,3 +309,8 @@ smart_meter/                                    # Spring Boot 主业务微服务
 - **不要使用 van-pull-refresh**：真机可能报错，推荐页用原生 `enablePullDownRefresh`。
 - **401 处理**：request.js 已统一处理，未登录时 toast 并跳转用户页。
 - **注册/登录报 Not Found（404）**：多为 8080 上跑的是旧版本后端。修改 smart_meter 中 auth 相关代码后，需在 `smart_meter` 目录执行 `mvn clean compile spring-boot:run` 重新编译并重启；并确认数据库已执行 SQL/schema.sql 或迁移脚本（users 表含 username、password_hash）。小程序 404 时会提示「接口不存在，请确认后端已重新编译并重启」；可用 GET `http://127.0.0.1:8080/api/auth/health` 确认当前后端是否包含登录/注册接口（返回 `{"ok":true,"auth":"login,register,wechat"}` 即正常）。
+
+### meme_assets 表 usage_scenario 字段
+
+- **写入链路**：ai-kore 管线 `image_pipeline.process_single_image` → 视觉大模型（可选）得到 usage_scenario → `save_to_mysql(..., usage_scenario=...)` → smart_meter `POST /api/meme-assets/from-pipeline` → `MemeAssetServiceImpl.createFromPipeline` → MyBatis-Plus 写入 `usage_scenario` 列。
+- **若 MySQL 中 usage_scenario 仍为空**：(1) 确认表中有该列：无则执行 `SQL/migrate_meme_assets_usage_scenario.sql`；(2) 实体已用 `@TableField("usage_scenario")` 显式映射；(3) 仅**新入库**的图片会带 usage_scenario；**已存在**的 embedding_id 会直接返回不更新，故历史记录需重新跑管线（新 URL）或手动 UPDATE 补全。

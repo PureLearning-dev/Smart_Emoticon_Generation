@@ -12,6 +12,11 @@
         src="{{detail.coverUrl || detail.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
         mode="aspectFill"
       />
+
+      <view wx:if="{{type !== 'article'}}" class="tag-row tag-row--xhs">
+        <text class="pill pill--xhs">{{(detail.usageScenario || detail.usage_scenario) || '日常'}}</text>
+        <text class="pill pill--xhs-secondary">{{(detail.styleTag || detail.style_tag) || '日常'}}</text>
+      </view>
     </view>
 
     <view wx:if="{{type === 'article'}}" class="card">
@@ -46,18 +51,25 @@
 
     <view wx:else class="card">
       <view class="section-head">
-        <text class="section-title">OCR 文本</text>
+        <text class="section-title section-title--xhs">使用场景</text>
       </view>
-      <text class="text-content">{{detail.ocrText || '暂无 OCR 文本'}}</text>
-      <button class="primary-btn" bindtap="copyOcrText">复制 OCR 文本</button>
+      <text class="text-content">{{(detail.usageScenario || detail.usage_scenario) || '日常'}}</text>
     </view>
 
-    <view class="card">
+    <view wx:if="{{type !== 'article'}}" class="card">
       <view class="section-head">
-        <text class="section-title">描述信息</text>
+        <text class="section-title section-title--xhs">描述</text>
       </view>
       <text class="helper">{{detail.description || '暂无描述信息'}}</text>
-      <button class="ghost-btn" bindtap="goBack">返回上一页</button>
+    </view>
+
+    <view wx:if="{{type !== 'article'}}" class="card">
+      <view class="section-head">
+        <text class="section-title section-title--xhs">图中文字（OCR）</text>
+      </view>
+      <text class="text-content">{{detail.ocrText || '暂无 OCR 文本'}}</text>
+      <button class="primary-btn primary-btn--xhs" bindtap="copyOcrText">复制 OCR 文本</button>
+      <button class="ghost-btn ghost-btn--xhs" bindtap="goBack">返回上一页</button>
     </view>
   </view>
 </view>

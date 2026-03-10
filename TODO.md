@@ -143,12 +143,16 @@
   * [x] ai-kore：pipeline 写入 Milvus 后调用 smart_meter 写入 meme_assets
   * [x] OCR 前对图片做适度缩小（OCR_MAX_DIMENSION=1024），加速识别
   * [x] scripts/test_ocr.py：OCR 独立测试脚本（本地路径或 --url 下载后识别）
+  * [x] 爬虫入库存储优化：meme_assets 支持 usage_scenario 全链路写入（实体/DTO/client/管线），默认「日常」；SearchResultItem 返回 usageScenario/styleTag；详见 docs/OPTIMIZE_MEME_ASSETS_PIPELINE_STORAGE.md
+  * [ ] 管线中接入 LLM 或规则生成爬虫素材的 usage_scenario、style_tag（可选）
+  * [ ] 恢复 OCR 或接入云 OCR，填满 ocr_text/title/description（可选）
 - [x] smart_meter：新增测试接口 GET /api/test/ai-crawl-process-image 调用 ai-kore POST /api/v1/crawl/process-image 触发离线入库管线
 - [x] smart_meter：新增正式接口 POST /api/crawl/process-image，调用 ai-kore POST /api/v1/crawl/process-image 并返回结构化结果
 - [ ] 后续实现自动爬取网页中的表情包，并调用上述功能进行自动化收集
 
 ### 7. 微信小程序前端
 
+- [x] **纠正首页搜图逻辑**：首页「文本搜图」→ **meme-search-text**（GET /api/meme-search），首页「图搜图」→ **meme-search-image**（POST /api/meme-search/image），数据源统一为素材库（meme_embeddings + meme_assets）。公共广场搜图（search-text、search-image）保留为独立入口。见 docs/PROMPT_FIX_HOME_SEARCH_USE_MATERIAL_LIBRARY.md。
 - [x] miniapp：微信小程序前端（Vant Weapp 重构）
   * [x] 首页：搜索框、热门标签、图搜图入口
   * [x] 推荐：瀑布流展示表情包、下拉刷新
@@ -172,6 +176,7 @@
   * [x] miniapp 首页先接入文章推荐接口，公共广场后续单独推进
   * [x] miniapp 首页结构精简：移除中部重复搜索框，保留顶部入口搜索动作
   * [x] miniapp 新增功能入口：公共广场与我的生成页面（静态数据占位，待后端接口）
+  * [x] miniapp 表情包详情页展示元数据：在 `pages/detail`（meme 类型）展示 usageScenario/styleTag/description/ocrText，并采用小红书红色主题（#FE2C55）
 
 ### 8. 用户行为反馈（可选）
 

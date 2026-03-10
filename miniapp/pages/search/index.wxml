@@ -1,5 +1,5 @@
 <view class="page">
-  <view class="card">
+  <view class="card list-card">
     <text class="title">智能搜索</text>
     <text class="subtitle">文本搜图 / 图搜图 / URL 搜图</text>
 
@@ -61,26 +61,26 @@
   <view class="card">
     <view class="section-head">
       <text class="section-title">搜索结果</text>
-      <text class="section-desc">{{results.length}} 条</text>
+      <text class="section-desc">{{list.length}} 条</text>
     </view>
 
     <view wx:if="{{loading}}" class="state-text">加载中...</view>
-    <view wx:elif="{{results.length===0}}" class="state-text">暂无结果，试试其他关键词</view>
+    <view wx:elif="{{list.length===0}}" class="state-text">暂无结果，试试其他关键词</view>
 
-    <view wx:else class="list">
-      <view
-        class="list-item"
-        wx:for="{{results}}"
-        wx:key="index"
-        data-id="{{item.id}}"
-        data-file-url="{{item.generatedImageUrl || item.fileUrl}}"
-        data-ocr-text="{{item.promptText || item.usageScenario || item.ocrText}}"
-        bindtap="goDetail"
-      >
-        <image class="cover" src="{{item.generatedImageUrl || item.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}" mode="aspectFill" />
-        <view class="item-content">
-          <text class="item-title">ID: {{item.id || '--'}}  相似度: {{item.score}}</text>
-          <text class="item-text">{{item.promptText || item.usageScenario || item.ocrText || '暂无文案'}}</text>
+    <view wx:else class="waterfall">
+      <view class="waterfall-inner">
+        <view
+          class="plaza-card"
+          wx:for="{{list}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="goDetail"
+        >
+          <image class="card-image" src="{{item.generatedImageUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}" mode="widthFix" />
+          <view class="card-body">
+            <text class="card-usage">{{item.usageScenario || '日常'}}</text>
+            <text class="card-style">{{item.styleTag || '日常'}}</text>
+          </view>
         </view>
       </view>
     </view>

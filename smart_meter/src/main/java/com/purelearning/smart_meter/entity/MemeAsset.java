@@ -28,6 +28,9 @@ public class MemeAsset {
 
     private String styleTag;
 
+    @TableField("usage_scenario")
+    private String usageScenario;
+
     private Integer sourceType;
 
     private String source;
@@ -106,6 +109,14 @@ public class MemeAsset {
 
     public void setStyleTag(String styleTag) {
         this.styleTag = styleTag;
+    }
+
+    public String getUsageScenario() {
+        return usageScenario;
+    }
+
+    public void setUsageScenario(String usageScenario) {
+        this.usageScenario = usageScenario;
     }
 
     public Integer getSourceType() {

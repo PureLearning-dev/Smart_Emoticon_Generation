@@ -34,5 +34,9 @@ module.exports = {
   },
   generatedImage: {
     detail: "/api/generated-images"
+  },
+  memeSearch: {
+    text: "/api/meme-search",
+    imageUpload: "/api/meme-search/image"
   }
 };

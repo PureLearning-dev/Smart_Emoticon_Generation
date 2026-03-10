@@ -1,7 +1,7 @@
 <view class="page">
   <view class="card head-card">
-    <text class="title">文本搜图</text>
-    <text class="subtitle">输入关键词，查找相关表情包</text>
+    <text class="title">素材库文本搜图</text>
+    <text class="subtitle">在爬虫/离线入库的素材库中按文字搜索表情包</text>
     <view class="search-panel">
       <input
         class="input"
@@ -36,7 +36,7 @@
           wx:for="{{list}}"
           wx:key="id"
           data-id="{{item.id}}"
-          bindtap="goDetail"
+          bindtap="onGoDetail"
         >
           <image
             class="card-image"
@@ -52,3 +52,4 @@
     </view>
   </view>
 </view>
+

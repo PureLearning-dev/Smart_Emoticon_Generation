@@ -66,6 +66,29 @@
   gap: 12rpx;
 }
 
+.tag-row--xhs {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.pill {
+  align-self: flex-start;
+  font-size: 22rpx;
+  border-radius: 999rpx;
+  padding: 8rpx 14rpx;
+}
+
+.pill--xhs {
+  color: #fe2c55;
+  background: rgba(254, 44, 85, 0.12);
+}
+
+.pill--xhs-secondary {
+  color: #333333;
+  background: rgba(31, 35, 41, 0.06);
+}
+
 .article-tag {
   align-self: flex-start;
   font-size: 22rpx;
@@ -73,6 +96,11 @@
   background: rgba(7, 193, 96, 0.12);
   border-radius: 999rpx;
   padding: 8rpx 14rpx;
+}
+
+.section-title--xhs {
+  color: #333333;
+  font-weight: 700;
 }
 
 .meta-text {
@@ -107,6 +135,15 @@
   align-items: center;
   justify-content: center;
   padding: 0;
+}
+
+.primary-btn--xhs {
+  background: #fe2c55;
+}
+
+.ghost-btn--xhs {
+  background: rgba(254, 44, 85, 0.12);
+  color: #fe2c55;
 }
 
 .state-text {

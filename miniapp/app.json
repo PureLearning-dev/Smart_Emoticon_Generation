@@ -4,6 +4,8 @@
     "pages/ai-generate/index",
     "pages/search/index",
     "pages/search-text/index",
+    "pages/meme-search-text/index",
+    "pages/meme-search-image/index",
     "pages/search-image/index",
     "pages/generated-detail/index",
     "pages/detail/index",

@@ -10,6 +10,7 @@ package com.purelearning.smart_meter.dto.pipeline;
  * @param title         表情包标题
  * @param description   图片语义描述信息（可用于 RAG 增强）
  * @param styleTag      风格标签（如搞笑、情侣、动漫等）
+ * @param usageScenario 使用场景（如职场、情侣、朋友、节日、日常）
  * @param sourceType    来源类型：1 系统采集底图，2 用户创作成品
  * @param source        图片来源，如 "crawl" 或 URL 来源
  */
@@ -21,6 +22,7 @@ public record PipelineAssetRequest(
         String title,
         String description,
         String styleTag,
+        String usageScenario,
         Integer sourceType,
         String source
 ) {

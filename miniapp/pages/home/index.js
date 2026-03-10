@@ -115,20 +115,20 @@ Page({
   },
 
   /**
-   * 快捷入口：文本搜图
+   * 快捷入口：文本搜图（素材库）
    */
   goSearchText() {
     wx.navigateTo({
-      url: "/pages/search-text/index"
+      url: "/pages/meme-search-text/index"
     });
   },
 
   /**
-   * 快捷入口：图搜图
+   * 快捷入口：图搜图（素材库）
    */
   goSearchImage() {
     wx.navigateTo({
-      url: "/pages/search-image/index"
+      url: "/pages/meme-search-image/index"
     });
   },
 

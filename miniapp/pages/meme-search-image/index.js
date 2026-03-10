@@ -1,8 +1,8 @@
 /**
- * 图搜图页
- * 职责：仅支持本地选图搜索，展示结果列表
+ * 素材库图搜图页
+ * 职责：调用 /api/meme-search/image 接口按上传图片在 meme_assets 中检索表情包素材
  */
-const { searchByImageFile } = require("../../services/search");
+const { searchMemeByImageFile } = require("../../services/memeSearch");
 
 const PAGE_SIZE = 10;
 
@@ -16,9 +16,6 @@ Page({
     hasSearched: false
   },
 
-  /**
-   * 选择图片（相册/相机）
-   */
   chooseImage() {
     wx.chooseMedia({
       count: 1,
@@ -34,9 +31,6 @@ Page({
     });
   },
 
-  /**
-   * 开始搜图（按钮点击）
-   */
   onSearch() {
     if (!this.data.imagePath) {
       wx.showToast({ title: "请先选择图片", icon: "none" });
@@ -45,22 +39,19 @@ Page({
     this.doSearch();
   },
 
-  /**
-   * 执行图搜图
-   */
   async doSearch() {
     const imagePath = this.data.imagePath;
     if (!imagePath) return;
 
     this.setData({ loading: true, error: false, hasSearched: true, list: [] });
     try {
-      const results = await searchByImageFile(imagePath, PAGE_SIZE);
+      const results = await searchMemeByImageFile(imagePath, PAGE_SIZE);
       const arr = Array.isArray(results) ? results : [];
       const mapped = arr.map(item => ({
         id: item.id,
-        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
-        usageScenario: item.usageScenario || item.promptText || item.ocrText || "",
-        styleTag: item.styleTag || "日常"
+        generatedImageUrl: item.fileUrl || "",
+        usageScenario: item.usageScenario || item.ocrText || "",
+        styleTag: item.styleTag || "素材库"
       }));
       this.setData({
         results: arr,
@@ -78,12 +69,17 @@ Page({
     }
   },
 
+  /**
+   * 点击结果卡片进入素材详情（meme_assets 数据，走 detail 页）
+   */
   goDetail(e) {
     const id = e.currentTarget.dataset.id || "";
-    if (!id) return;
+    const fileUrl = e.currentTarget.dataset.fileUrl || "";
+    const ocrText = e.currentTarget.dataset.ocrText || "";
+    const urlEnc = fileUrl ? encodeURIComponent(fileUrl) : "";
+    const ocrEnc = ocrText ? encodeURIComponent(ocrText) : "";
     wx.navigateTo({
-      // 复用生成图详情页的卡片与信息布局，与文本搜图一致
-      url: `/pages/generated-detail/index?id=${encodeURIComponent(id)}`
+      url: `/pages/detail/index?id=${id}&fileUrl=${urlEnc}&ocrText=${ocrEnc}`
     });
   }
 });
