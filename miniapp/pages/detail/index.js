@@ -10,7 +10,8 @@ Page({
     id: "",
     type: "meme",
     detail: null,
-    loading: false
+    loading: false,
+    saving: false
   },
 
   /**
@@ -75,5 +76,63 @@ Page({
    */
   goBack() {
     wx.navigateBack();
+  },
+
+  /**
+   * 保存当前图片到相册（meme 详情使用 fileUrl，文章详情使用 coverUrl）
+   */
+  async onSaveToAlbum() {
+    const d = this.data.detail || {};
+    const url = d.fileUrl || d.coverUrl;
+    if (!url) {
+      wx.showToast({ title: "暂无图片", icon: "none" });
+      return;
+    }
+    if (this.data.saving) return;
+    this.setData({ saving: true });
+    wx.showLoading({ title: "保存中...", mask: true });
+
+    try {
+      const downloadRes = await new Promise((resolve, reject) => {
+        wx.downloadFile({
+          url,
+          success: resolve,
+          fail: reject
+        });
+      });
+      if (!downloadRes || downloadRes.statusCode !== 200) {
+        throw new Error("下载失败");
+      }
+      const tempFilePath = downloadRes.tempFilePath;
+      await new Promise((resolve, reject) => {
+        wx.saveImageToPhotosAlbum({
+          filePath: tempFilePath,
+          success: resolve,
+          fail: reject
+        });
+      });
+      wx.hideLoading();
+      wx.showToast({ title: "已保存到相册", icon: "success" });
+    } catch (e) {
+      wx.hideLoading();
+      const errMsg = (e && (e.errMsg || e.message)) ? (e.errMsg || e.message) : "保存失败";
+      const msgStr = String(errMsg);
+      if (msgStr.indexOf("auth") !== -1 || msgStr.indexOf("authorize") !== -1) {
+        wx.showModal({
+          title: "需要相册权限",
+          content: "保存图片需要开启相册权限，请在设置中允许“保存到相册”。",
+          confirmText: "去设置",
+          success: (res) => {
+            if (res.confirm) {
+              wx.openSetting({});
+            }
+          }
+        });
+      } else {
+        wx.showToast({ title: "保存失败，请重试", icon: "none" });
+      }
+    } finally {
+      this.setData({ saving: false });
+    }
   }
 });

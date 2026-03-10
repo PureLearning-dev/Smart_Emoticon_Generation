@@ -31,9 +31,10 @@
 .cover {
   margin-top: 20rpx;
   width: 100%;
-  height: 420rpx;
   border-radius: 16rpx;
+  overflow: hidden;
   display: block;
+  background: #f0f0f0;
 }
 
 .section-head {

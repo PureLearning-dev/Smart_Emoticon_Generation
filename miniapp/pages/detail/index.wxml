@@ -6,11 +6,11 @@
   <view wx:else>
     <view class="card">
       <text class="title">{{detail.title || (type === 'article' ? '文章详情' : '表情包详情')}}</text>
-      <text class="subtitle">{{type === 'article' ? '文章 ID' : '素材 ID'}}：{{id || detail.id || '--'}}</text>
+      <text wx:if="{{type === 'article'}}" class="subtitle">文章 ID：{{id || detail.id || '--'}}</text>
       <image
         class="cover"
         src="{{detail.coverUrl || detail.fileUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
-        mode="aspectFill"
+        mode="widthFix"
       />
 
       <view wx:if="{{type !== 'article'}}" class="tag-row tag-row--xhs">
@@ -65,11 +65,11 @@
 
     <view wx:if="{{type !== 'article'}}" class="card">
       <view class="section-head">
-        <text class="section-title section-title--xhs">图中文字（OCR）</text>
+        <text class="section-title section-title--xhs">图中文字</text>
       </view>
       <text class="text-content">{{detail.ocrText || '暂无 OCR 文本'}}</text>
-      <button class="primary-btn primary-btn--xhs" bindtap="copyOcrText">复制 OCR 文本</button>
-      <button class="ghost-btn ghost-btn--xhs" bindtap="goBack">返回上一页</button>
+      <button class="primary-btn primary-btn--xhs" bindtap="copyOcrText">复制文本</button>
+      <button class="ghost-btn ghost-btn--xhs" bindtap="onSaveToAlbum" disabled="{{saving}}">保存到相册</button>
     </view>
   </view>
 </view>
