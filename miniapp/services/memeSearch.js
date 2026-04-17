@@ -4,7 +4,7 @@
  *       以及 /api/meme-search/image 上传图搜图接口
  */
 const API = require("../config/api");
-const { request, upload } = require("./request");
+const requestService = require("./request");
 
 /**
  * 文本搜索爬虫素材
@@ -15,7 +15,7 @@ const { request, upload } = require("./request");
 function searchMemeByText(query, topK) {
   const k = topK || 10;
   const url = `${API.memeSearch.text}?query=${encodeURIComponent(query)}&topK=${k}`;
-  return request({
+  return requestService.request({
     url,
     method: "GET"
   });
@@ -29,7 +29,7 @@ function searchMemeByText(query, topK) {
  */
 function searchMemeByImageFile(filePath, topK) {
   const k = topK || 10;
-  return upload(API.memeSearch.imageUpload, filePath, {
+  return requestService.upload(API.memeSearch.imageUpload, filePath, {
     topK: String(k)
   }).then((data) => (Array.isArray(data) ? data : (data && data.data) || []));
 }

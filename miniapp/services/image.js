@@ -3,7 +3,7 @@
  * 职责：调用后端 POST /api/image/generate，提交 prompt、userId、可选 imageUrls、isPublic，返回生成结果
  */
 const API = require("../config/api");
-const { request, upload } = require("./request");
+const requestService = require("./request");
 
 /**
  * 调用生成图片接口
@@ -23,7 +23,7 @@ function generateImage(payload) {
   if (payload.imageUrls && payload.imageUrls.length) {
     body.imageUrls = payload.imageUrls;
   }
-  return request({
+  return requestService.request({
     url: API.image.generate,
     method: "POST",
     header: {
@@ -39,7 +39,7 @@ function generateImage(payload) {
  * @returns {Promise<string>} 参考图公网 URL
  */
 function uploadReferenceImage(filePath) {
-  return upload(API.image.uploadReference, filePath, {}).then(data => {
+  return requestService.upload(API.image.uploadReference, filePath, {}).then(data => {
     if (data && typeof data.url === "string") return data.url;
     throw new Error("参考图上传失败，请重试");
   });

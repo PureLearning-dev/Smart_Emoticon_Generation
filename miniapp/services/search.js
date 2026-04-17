@@ -3,7 +3,7 @@
  * 职责：封装文本搜图与图搜图接口
  */
 const API = require("../config/api");
-const { request, upload } = require("./request");
+const requestService = require("./request");
 
 /**
  * 文本搜索
@@ -11,7 +11,7 @@ const { request, upload } = require("./request");
  * @param {number} topK 返回条数
  */
 function searchByText(query, topK) {
-  return request({
+  return requestService.request({
     url: `${API.search.text}?query=${encodeURIComponent(query)}&topK=${topK || 10}`,
     method: "GET"
   });
@@ -23,7 +23,7 @@ function searchByText(query, topK) {
  * @param {number} topK 返回条数
  */
 function searchByImageUrl(imageUrl, topK) {
-  return request({
+  return requestService.request({
     url: `${API.search.imageUrl}?url=${encodeURIComponent(imageUrl)}&topK=${topK || 10}`,
     method: "POST"
   });
@@ -35,7 +35,7 @@ function searchByImageUrl(imageUrl, topK) {
  * @param {number} topK 返回条数
  */
 function searchByImageFile(filePath, topK) {
-  return upload(API.search.imageUpload, filePath, {
+  return requestService.upload(API.search.imageUpload, filePath, {
     topK: String(topK || 10)
   });
 }
