@@ -1,5 +1,6 @@
 package com.purelearning.smart_meter.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -48,6 +49,8 @@ public class User {
         this.username = username;
     }
 
+    /** JSON 序列化时不输出密码哈希，避免管理端列表泄露密文。 */
+    @JsonIgnore
     public String getPasswordHash() {
         return passwordHash;
     }

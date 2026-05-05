@@ -152,6 +152,8 @@
 
 ### 7. 微信小程序前端
 
+- [x] **管理后台 admin-web（2026-05）**：根目录 `admin-web/`，Vite+React+TS+Ant Design；演示登录（`VITE_ADMIN_USERNAME`/`VITE_ADMIN_PASSWORD`）；新增 `/api/admin/*` 管理接口，支持用户增删改查、用户生成图片管理、广场内容与文章详情管理；离线入库单张/批量（`POST /api/crawl/process-image`、`POST /api/crawl/process-images`）；开发态 Vite 代理 `/api`→8080。`User` 实体 JSON 对 `passwordHash` 使用 `@JsonIgnore` 防泄露。
+- [x] **管理后台离线入库增强（2026-05）**：`smart_meter` 新增 `POST /api/crawl/extract-image-urls`，使用 Jsoup 从网页解析图片 URL；`admin-web` 离线入库页支持单张 URL、批量 URL、网页解析三种模式，网页解析结果可预览勾选后批量入库；统一展示入库结果（状态、OSS URL、embeddingId、OCR 摘要、错误原因），支持失败项单条重试与全部重试。主数据仍写入 `meme_assets`；后续可扩展 `crawl_job` / `crawl_job_item` 做任务历史与异步进度。
 - [x] **底部 Tab 导航（2026-05）**：`app.json` 配置原生 `tabBar`（首页、搜索、公共广场、生成、我的）；`assets/tab/*.png` 为 81×81 占位图标，可后续替换；首页 `index.wxml` 去掉「功能入口」宫格，保留头图与推荐区，数据与接口逻辑不变；`pages/search/index` 增加 `onShow` 读取 `miniapp_search_pending` 以支持非 URL 传参进入搜索 Tab；`pages/my-creation` 的「去生成」由 `navigateTo` 改为 `wx.switchTab` 至 `pages/ai-generate`。
 - [x] **纠正首页搜图逻辑**：首页「文本搜图」→ **meme-search-text**（GET /api/meme-search），首页「图搜图」→ **meme-search-image**（POST /api/meme-search/image），数据源统一为素材库（meme_embeddings + meme_assets）。公共广场搜图（search-text、search-image）保留为独立入口。见 docs/PROMPT_FIX_HOME_SEARCH_USE_MATERIAL_LIBRARY.md。
 - [x] miniapp：微信小程序前端（Vant Weapp 重构）
