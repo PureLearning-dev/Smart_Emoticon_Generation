@@ -5,44 +5,7 @@
       <text class="tag">Beta</text>
     </view>
     <text class="hero-slogan">发现与生成你的表情包</text>
-  </view>
-
-  <view class="quick-entry card">
-    <view class="section-head">
-      <text class="section-title">功能入口</text>
-    </view>
-    <view class="entry-grid">
-      <view class="entry-item" hover-class="entry-item-hover" bindtap="goSearchText">
-        <view class="entry-icon">🔎</view>
-        <text class="entry-name">文本搜图</text>
-        <text class="entry-desc">按关键词找图</text>
-      </view>
-      <view class="entry-item" hover-class="entry-item-hover" bindtap="goSearchImage">
-        <view class="entry-icon">🖼️</view>
-        <text class="entry-name">图搜图</text>
-        <text class="entry-desc">相似图片检索</text>
-      </view>
-      <view class="entry-item" hover-class="entry-item-hover" bindtap="goPlazaPage">
-        <view class="entry-icon">🏟️</view>
-        <text class="entry-name">公共广场</text>
-        <text class="entry-desc">浏览广场内容</text>
-      </view>
-      <view class="entry-item" hover-class="entry-item-hover" bindtap="goMyCreationPage">
-        <view class="entry-icon">✨</view>
-        <text class="entry-name">生成图片</text>
-        <text class="entry-desc">创作与生成</text>
-      </view>
-      <view class="entry-item" hover-class="entry-item-hover" bindtap="goLoginPage">
-        <view class="entry-icon">🔐</view>
-        <text class="entry-name">账号登录</text>
-        <text class="entry-desc">管理登录状态</text>
-      </view>
-      <view class="entry-item" hover-class="entry-item-hover" bindtap="goUserPage">
-        <view class="entry-icon">👤</view>
-        <text class="entry-name">个人中心</text>
-        <text class="entry-desc">查看账号信息</text>
-      </view>
-    </view>
+    <text class="tab-hint">使用底部导航可切换到搜索、广场、生成与个人中心</text>
   </view>
 
   <view class="recommend-card card">

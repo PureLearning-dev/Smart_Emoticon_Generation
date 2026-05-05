@@ -152,6 +152,7 @@
 
 ### 7. 微信小程序前端
 
+- [x] **底部 Tab 导航（2026-05）**：`app.json` 配置原生 `tabBar`（首页、搜索、公共广场、生成、我的）；`assets/tab/*.png` 为 81×81 占位图标，可后续替换；首页 `index.wxml` 去掉「功能入口」宫格，保留头图与推荐区，数据与接口逻辑不变；`pages/search/index` 增加 `onShow` 读取 `miniapp_search_pending` 以支持非 URL 传参进入搜索 Tab；`pages/my-creation` 的「去生成」由 `navigateTo` 改为 `wx.switchTab` 至 `pages/ai-generate`。
 - [x] **纠正首页搜图逻辑**：首页「文本搜图」→ **meme-search-text**（GET /api/meme-search），首页「图搜图」→ **meme-search-image**（POST /api/meme-search/image），数据源统一为素材库（meme_embeddings + meme_assets）。公共广场搜图（search-text、search-image）保留为独立入口。见 docs/PROMPT_FIX_HOME_SEARCH_USE_MATERIAL_LIBRARY.md。
 - [x] miniapp：微信小程序前端（Vant Weapp 重构）
   * [x] 首页：搜索框、热门标签、图搜图入口
@@ -177,6 +178,7 @@
   * [x] miniapp 首页结构精简：移除中部重复搜索框，保留顶部入口搜索动作
   * [x] miniapp 新增功能入口：公共广场与我的生成页面（静态数据占位，待后端接口）
   * [x] miniapp 表情包详情页展示元数据：在 `pages/detail`（meme 类型）展示 usageScenario/styleTag/description/ocrText，并采用小红书红色主题（#FE2C55）
+  * [x] miniapp 登录页新增“微信一键登录（展示）”按钮与样式（仅 UI 展示，不接入真实登录逻辑）
 
 ### 8. 用户行为反馈（可选）
 

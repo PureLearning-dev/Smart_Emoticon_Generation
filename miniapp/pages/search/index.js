@@ -34,6 +34,26 @@ Page({
   },
 
   /**
+   * Tab 页无法用 URL 带参切换时，从本地暂存读取待应用参数并执行搜索（与 onLoad 互斥于首启）
+   */
+  onShow() {
+    try {
+      const pending = wx.getStorageSync("miniapp_search_pending");
+      if (pending && typeof pending === "object") {
+        wx.removeStorageSync("miniapp_search_pending");
+        const mode = pending.mode || "text";
+        const keyword = pending.keyword ? String(pending.keyword) : "";
+        this.setData({ mode, keyword, results: [], list: [] });
+        if (mode === "text" && keyword.trim()) {
+          this.handleTextSearch();
+        }
+      }
+    } catch (e) {
+      // 忽略存储异常
+    }
+  },
+
+  /**
    * 切换搜索模式
    * @param {object} e 点击事件
    */

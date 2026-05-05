@@ -1,12 +1,11 @@
 /**
  * 首页逻辑层
- * 职责：提供首页按钮点击能力、搜索跳转与首页文章推荐展示
+ * 职责：首页文章推荐展示；主要功能入口由底部 Tab 承担
  */
 const { getHomepageRecommendations } = require("../../services/plaza");
 
 Page({
   data: {
-    searchKeyword: "",
     recommendList: [],
     recommendLoading: false,
     recommendError: false,
@@ -84,88 +83,6 @@ Page({
     } catch (e) {
       this.setData({ recommendLoadingMore: false });
     }
-  },
-
-  /**
-   * 输入首页搜索关键词。
-   * @param {object} e 输入事件
-   */
-  onInputKeyword(e) {
-    this.setData({
-      searchKeyword: e.detail.value || ""
-    });
-  },
-
-  /**
-   * 从首页跳转到文本搜索结果页。
-   */
-  goSearchByText() {
-    const keyword = (this.data.searchKeyword || "").trim();
-    if (!keyword) {
-      wx.showToast({
-        title: "请输入关键词",
-        icon: "none"
-      });
-      return;
-    }
-
-    wx.navigateTo({
-      url: `/pages/search/index?mode=text&keyword=${encodeURIComponent(keyword)}`
-    });
-  },
-
-  /**
-   * 快捷入口：文本搜图（素材库）
-   */
-  goSearchText() {
-    wx.navigateTo({
-      url: "/pages/meme-search-text/index"
-    });
-  },
-
-  /**
-   * 快捷入口：图搜图（素材库）
-   */
-  goSearchImage() {
-    wx.navigateTo({
-      url: "/pages/meme-search-image/index"
-    });
-  },
-
-  /**
-   * 跳转用户中心页
-   */
-  goUserPage() {
-    wx.navigateTo({
-      url: "/pages/user/index"
-    });
-  },
-
-  /**
-   * 跳转公共广场页
-   */
-  goPlazaPage() {
-    wx.navigateTo({
-      url: "/pages/plaza/index"
-    });
-  },
-
-  /**
-   * 快捷入口：生成图片（跳转生成页）
-   */
-  goMyCreationPage() {
-    wx.navigateTo({
-      url: "/pages/ai-generate/index"
-    });
-  },
-
-  /**
-   * 跳转登录页
-   */
-  goLoginPage() {
-    wx.navigateTo({
-      url: "/pages/login/index"
-    });
   },
 
   /**

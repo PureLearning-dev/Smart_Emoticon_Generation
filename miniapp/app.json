@@ -1,18 +1,18 @@
 {
   "pages": [
     "pages/home/index",
-    "pages/ai-generate/index",
     "pages/search/index",
+    "pages/plaza/index",
+    "pages/ai-generate/index",
+    "pages/user/index",
     "pages/search-text/index",
     "pages/meme-search-text/index",
     "pages/meme-search-image/index",
     "pages/search-image/index",
     "pages/generated-detail/index",
     "pages/detail/index",
-    "pages/user/index",
     "pages/login/index",
     "pages/register/index",
-    "pages/plaza/index",
     "pages/my-creation/index",
     "pages/user/disclaimer",
     "pages/user/favorites",
@@ -25,6 +25,44 @@
     "navigationBarTextStyle": "black",
     "backgroundColor": "#F7F8FA",
     "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#07c160",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "assets/tab/home.png",
+        "selectedIconPath": "assets/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/search/index",
+        "text": "搜索",
+        "iconPath": "assets/tab/search.png",
+        "selectedIconPath": "assets/tab/search-active.png"
+      },
+      {
+        "pagePath": "pages/plaza/index",
+        "text": "广场",
+        "iconPath": "assets/tab/plaza.png",
+        "selectedIconPath": "assets/tab/plaza-active.png"
+      },
+      {
+        "pagePath": "pages/ai-generate/index",
+        "text": "生成",
+        "iconPath": "assets/tab/create.png",
+        "selectedIconPath": "assets/tab/create-active.png"
+      },
+      {
+        "pagePath": "pages/user/index",
+        "text": "我的",
+        "iconPath": "assets/tab/user.png",
+        "selectedIconPath": "assets/tab/user-active.png"
+      }
+    ]
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

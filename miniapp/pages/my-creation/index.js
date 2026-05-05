@@ -113,7 +113,7 @@ Page({
    * 跳转生成页（创作新图）
    */
   goCreateNew() {
-    wx.navigateTo({
+    wx.switchTab({
       url: "/pages/ai-generate/index"
     });
   }

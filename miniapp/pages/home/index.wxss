@@ -44,6 +44,14 @@
   line-height: 1.5;
 }
 
+.tab-hint {
+  margin-top: 16rpx;
+  display: block;
+  font-size: 24rpx;
+  color: #999999;
+  line-height: 1.5;
+}
+
 .section-head {
   display: flex;
   align-items: baseline;
@@ -60,67 +68,6 @@
 .section-desc {
   font-size: 24rpx;
   color: #999999;
-}
-
-.entry-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
-}
-
-.entry-item {
-  background: #f7f8fa;
-  border-radius: 16rpx;
-  border: 2rpx solid #eef1f5;
-  padding: 20rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20rpx;
-}
-
-.entry-icon {
-  font-size: 32rpx;
-}
-
-.entry-name {
-  font-size: 26rpx;
-  color: #333333;
-  font-weight: 600;
-}
-
-.entry-desc {
-  font-size: 22rpx;
-  color: #999999;
-}
-
-.entry-item::after {
-  content: "";
-  width: 40rpx;
-  height: 4rpx;
-  border-radius: 999rpx;
-  background: rgba(7, 193, 96, 0.2);
-}
-
-.entry-item:active {
-  transform: translateY(1rpx);
-}
-
-.entry-item-hover {
-  opacity: 0.85;
-}
-
-.quick-entry .section-head {
-  margin-bottom: 20rpx;
-}
-
-.quick-entry .section-title {
-  font-size: 30rpx;
-}
-
-.quick-entry .section-desc {
-  font-size: 24rpx;
 }
 
 .section-desc {
