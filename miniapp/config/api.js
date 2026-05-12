@@ -30,13 +30,15 @@ module.exports = {
     uploadReference: "/api/image/upload-reference"
   },
   user: {
-    generatedImages: "/api/user/generated-images"
+    generatedImages: "/api/user/generated-images",
+    uploadAvatar: "/api/user/profile/avatar"
   },
   generatedImage: {
     detail: "/api/generated-images"
   },
   memeSearch: {
     text: "/api/meme-search",
-    imageUpload: "/api/meme-search/image"
+    imageUpload: "/api/meme-search/image",
+    imageUrl: "/api/meme-search/image/url"
   }
 };

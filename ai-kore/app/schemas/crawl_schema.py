@@ -14,7 +14,6 @@ class ProcessImageRequest(BaseModel):
 
     url: str = Field(..., description="图片 URL")
 
-
 class ProcessImageBatchRequest(BaseModel):
     """批量图片处理请求（串行：每张处理完再处理下一张）"""
 

@@ -12,6 +12,7 @@ from pathlib import Path
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.schemas.vector_schema import (
+    ImageUrlSearchRequest,
     SearchImageRequest,
     SearchResponse,
     SearchResultItem,
@@ -26,6 +27,36 @@ from vector.search import (
 )
 
 router = APIRouter(prefix="/vector", tags=["向量搜索"])
+
+
+def _download_search_image(url: str) -> Path:
+    """
+    下载远程图片到临时文件，仅用于 URL 图搜图的临时向量化。
+
+    Args:
+        url: http/https 图片地址
+
+    Returns:
+        临时图片路径。调用方负责删除。
+    """
+    try:
+        _, temp_path = download_image(url, timeout=10.0, max_size_bytes=10 * 1024 * 1024, save_to_file=True)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"图片下载失败: {exc}") from exc
+    if temp_path is None:
+        raise HTTPException(status_code=502, detail="图片下载失败")
+    return temp_path
+
+
+def _cleanup_temp_path(temp_path: Path) -> None:
+    """删除 URL 搜图下载的临时文件。"""
+    if temp_path.exists():
+        try:
+            temp_path.unlink()
+        except OSError:
+            pass
 
 
 @router.post(
@@ -86,6 +117,48 @@ async def search_image_upload_api(
 
 
 @router.post(
+    "/search-image-url",
+    response_model=SearchResponse,
+    summary="图相似度搜索（URL，爬虫素材）",
+    description="下载图片 URL 后临时向量化，在 meme_embeddings 中检索素材库，返回 embedding_id 与 score；不会自动入库。",
+)
+async def search_image_url_api(req: ImageUrlSearchRequest) -> SearchResponse:
+    """
+    素材库 URL 图搜图。
+    只检索 meme_embeddings + meme_assets 数据源，下载图片仅用于本次查询。
+    """
+    temp_path = _download_search_image(req.image_url)
+    try:
+        hits = search_by_image(temp_path, top_k=req.top_k)
+        return SearchResponse(
+            results=[SearchResultItem(embedding_id=eid, score=score) for eid, score in hits]
+        )
+    finally:
+        _cleanup_temp_path(temp_path)
+
+
+@router.post(
+    "/search-plaza-image-url",
+    response_model=SearchResponse,
+    summary="图相似度搜索（URL，公共广场）",
+    description="下载图片 URL 后临时向量化，在 user_generated_embeddings 中检索 is_public==1 的公开用户生成图，返回 embedding_id 与 score；不会自动入库。",
+)
+async def search_plaza_image_url_api(req: ImageUrlSearchRequest) -> SearchResponse:
+    """
+    公共广场 URL 图搜图。
+    只检索 user_generated_embeddings，且使用 is_public == 1 过滤公开内容。
+    """
+    temp_path = _download_search_image(req.image_url)
+    try:
+        hits = search_plaza_by_image(temp_path, top_k=req.top_k)
+        return SearchResponse(
+            results=[SearchResultItem(embedding_id=eid, score=score) for eid, score in hits]
+        )
+    finally:
+        _cleanup_temp_path(temp_path)
+
+
+@router.post(
     "/search-meme-text",
     response_model=SearchResponse,
     summary="文本相似度搜索（爬虫素材 meme_embeddings）",
@@ -114,22 +187,14 @@ async def search_meme_image_api(req: SearchImageRequest) -> SearchResponse:
 
     接收图片 URL，下载到本地临时文件后使用 search_by_image 在 meme_embeddings 中检索。
     """
-    if not req.url or not req.url.strip():
-        raise HTTPException(status_code=400, detail="url 不能为空")
-    data, temp_path = download_image(req.url, save_to_file=True)
-    if temp_path is None:
-        raise HTTPException(status_code=502, detail="图片下载失败")
+    temp_path = _download_search_image(req.url)
     try:
         hits = search_by_image(temp_path, top_k=req.top_k)
         return SearchResponse(
             results=[SearchResultItem(embedding_id=eid, score=score) for eid, score in hits]
         )
     finally:
-        if temp_path.exists():
-            try:
-                temp_path.unlink()
-            except OSError:
-                pass
+        _cleanup_temp_path(temp_path)
 
 
 @router.post(

@@ -1,6 +1,7 @@
 package com.purelearning.smart_meter.controller;
 
 import com.purelearning.smart_meter.dto.search.PlazaSearchResultItem;
+import com.purelearning.smart_meter.dto.search.SearchImageUrlRequest;
 import com.purelearning.smart_meter.service.SearchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,7 +18,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 /**
  * 图搜图接口（公共广场）。
- * 上传图片 → 调 ai-kore 公共广场向量检索（user_generated_embeddings 且 is_public==1）→ user_generated_images 回表 → 返回相似用户生成图列表。
+ * 上传图片或图片 URL → 调 ai-kore 公共广场向量检索（user_generated_embeddings 且 is_public==1）→ user_generated_images 回表 → 返回相似用户生成图列表。
  */
 @RestController
 @RequestMapping("/api/search")
@@ -52,6 +53,27 @@ public class ImageSearchController {
                 file.getOriginalFilename(), file.getSize(), k);
         List<PlazaSearchResultItem> results = searchService.searchByImage(file, k);
         log.info("<<< [接口] POST /api/search/image count={}", results.size());
+        return results;
+    }
+
+    @PostMapping("/image/url")
+    @Operation(
+            summary = "图片 URL 搜索",
+            description = "根据远程图片 URL，在公共广场（仅公开用户生成图）中返回最相似的列表。URL 图片仅用于临时向量化，不会自动入库。"
+    )
+    public List<PlazaSearchResultItem> searchByImageUrl(@RequestBody SearchImageUrlRequest request) {
+        if (request == null || request.getUrl() == null || request.getUrl().trim().isEmpty()) {
+            throw new ResponseStatusException(BAD_REQUEST, "url 不能为空");
+        }
+        String url = request.getUrl().trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            throw new ResponseStatusException(BAD_REQUEST, "仅支持 http/https 图片 URL");
+        }
+        int topK = request.getTopK() != null ? request.getTopK() : 10;
+        int k = Math.min(Math.max(topK, 1), 100);
+        log.info(">>> [接口] POST /api/search/image/url url={} topK={}", url, k);
+        List<PlazaSearchResultItem> results = searchService.searchByImageUrl(url, k);
+        log.info("<<< [接口] POST /api/search/image/url count={}", results.size());
         return results;
     }
 }

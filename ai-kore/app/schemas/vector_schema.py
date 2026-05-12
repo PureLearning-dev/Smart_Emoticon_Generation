@@ -16,10 +16,17 @@ class SearchTextRequest(BaseModel):
     top_k: int = Field(10, description="返回数量", ge=1, le=100)
 
 
-class SearchImageRequest(BaseModel):
+class ImageUrlSearchRequest(BaseModel):
     """图相似度搜索请求（传 URL 时使用）"""
 
-    url: str = Field(..., description="图片 URL")
+    image_url: str = Field(..., description="待检索图片 URL，仅支持 http/https", min_length=1)
+    top_k: int = Field(10, description="返回数量", ge=1, le=50)
+
+
+class SearchImageRequest(BaseModel):
+    """兼容旧版图相似度搜索请求（字段名为 url）"""
+
+    url: str = Field(..., description="图片 URL", min_length=1)
     top_k: int = Field(10, description="返回数量", ge=1, le=100)
 
 

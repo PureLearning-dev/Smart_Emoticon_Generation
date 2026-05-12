@@ -70,11 +70,11 @@ public class MemeSearchServiceImpl implements MemeSearchService {
     @Override
     public List<SearchResultItem> searchByImageUrl(String url, int topK) {
         log.info(">>> [核心] MemeSearchService.searchByImageUrl url={} topK={}", url, topK);
-        String target = aiKoreBaseUrl + "/api/v1/vector/search-meme-image";
+        String target = aiKoreBaseUrl + "/api/v1/vector/search-image-url";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         Map<String, Object> body = Map.of(
-                "url", url,
+                "image_url", url,
                 "top_k", topK
         );
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);

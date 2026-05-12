@@ -11,6 +11,7 @@ import hashlib
 import tempfile
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlparse
 
 import httpx
 
@@ -57,14 +58,20 @@ def download_image(
     """
     if not url or not url.strip():
         raise ValueError("url 不能为空")
+    parsed = urlparse(url.strip())
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("仅支持 http/https 图片 URL")
 
     with httpx.Client(timeout=timeout, follow_redirects=True, headers=DEFAULT_HEADERS) as client:
-        response = client.get(url)
+        response = client.get(url.strip())
         response.raise_for_status()
 
         content_type = response.headers.get("content-type", "").split(";")[0].strip().lower()
         if content_type not in IMAGE_CONTENT_TYPES:
             raise ValueError(f"非图片类型: content-type={content_type}")
+        content_length = response.headers.get("content-length")
+        if content_length and int(content_length) > max_size_bytes:
+            raise ValueError(f"图片大小超过限制: {content_length} > {max_size_bytes}")
 
         data = response.content
         if len(data) > max_size_bytes:

@@ -3,13 +3,24 @@
  * 职责：账号密码登录，登录成功后保存 token 与用户信息并返回
  */
 const { loginByPassword } = require("../../services/auth");
-const { setUserState } = require("../../store/user");
+const { getUserState, setUserState } = require("../../store/user");
 
 Page({
   data: {
     username: "",
     password: "",
     loading: false
+  },
+
+  onShow() {
+    const state = getUserState();
+    const token = state && state.token ? state.token : "";
+    if (token) {
+      wx.showToast({ title: "已登录，无需重复登录", icon: "none" });
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 600);
+    }
   },
 
   onInputUsername(e) {
@@ -60,6 +71,17 @@ Page({
   goRegister() {
     wx.navigateTo({
       url: "/pages/register/index"
+    });
+  },
+
+  /**
+   * 微信登录按钮展示占位（仅用于 UI 展示，不执行真实登录）。
+   * 后续接入：wx.login -> 后端 /api/auth/wechat/login。
+   */
+  onWechatLoginPreview() {
+    wx.showToast({
+      title: "微信登录开发中",
+      icon: "none"
     });
   }
 });

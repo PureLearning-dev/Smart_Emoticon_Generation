@@ -63,6 +63,9 @@ public class MemeSearchController {
         int topK = request.getTopK() != null ? request.getTopK() : 10;
         int k = Math.min(Math.max(topK, 1), 100);
         String url = request.getUrl().trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            throw new ResponseStatusException(BAD_REQUEST, "仅支持 http/https 图片 URL");
+        }
         log.info(">>> [接口] POST /api/meme-search/image/url url={} topK={}", url, k);
         List<SearchResultItem> results = memeSearchService.searchByImageUrl(url, k);
         log.info("<<< [接口] POST /api/meme-search/image/url count={}", results.size());

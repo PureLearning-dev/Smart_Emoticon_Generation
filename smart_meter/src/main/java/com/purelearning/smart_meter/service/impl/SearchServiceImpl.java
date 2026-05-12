@@ -95,6 +95,25 @@ public class SearchServiceImpl implements SearchService {
         return items;
     }
 
+    @Override
+    public List<PlazaSearchResultItem> searchByImageUrl(String imageUrl, int topK) {
+        log.info(">>> [核心] SearchService.searchByImageUrl url={} topK={}", imageUrl, topK);
+        String url = aiKoreBaseUrl + "/api/v1/vector/search-plaza-image-url";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        Map<String, Object> body = Map.of(
+                "image_url", imageUrl,
+                "top_k", topK
+        );
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+        log.info("  - 调用 ai-kore 公共广场 URL 图搜图 POST {}", url);
+        ResponseEntity<Map<String, Object>> resp = restTemplate.exchange(
+                url, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
+        List<PlazaSearchResultItem> items = mapVectorResultsToPlazaItems(resp.getBody());
+        log.info("<<< [核心] SearchService.searchByImageUrl count={}", items.size());
+        return items;
+    }
+
     /**
      * 将 ai-kore 返回的 results 按 embedding_id 回表 user_generated_images，
      * 仅保留 generation_status=1、is_public=1 的记录，按 ai-kore 返回顺序组装 PlazaSearchResultItem。

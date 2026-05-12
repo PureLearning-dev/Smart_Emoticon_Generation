@@ -56,7 +56,7 @@ class AuthServiceImplTest {
 
         WechatLoginResponse resp = authService.wechatLoginMock(req);
 
-        assertThat(resp.isNewUser()).isTrue();
+        assertThat(resp.getNewUser()).isTrue();
         assertThat(resp.getToken()).isEqualTo("mock.jwt.token");
         assertThat(resp.getExpiresInSeconds()).isEqualTo(604800L);
         assertThat(resp.getUser().getOpenid()).isEqualTo(expectedOpenid);
@@ -83,7 +83,7 @@ class AuthServiceImplTest {
 
         WechatLoginResponse resp = authService.wechatLoginMock(req);
 
-        assertThat(resp.isNewUser()).isFalse();
+        assertThat(resp.getNewUser()).isFalse();
         assertThat(resp.getToken()).isEqualTo("exist.jwt.token");
         assertThat(resp.getUser().getOpenid()).isEqualTo(expectedOpenid);
 

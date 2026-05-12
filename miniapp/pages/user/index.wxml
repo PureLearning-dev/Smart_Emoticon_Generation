@@ -8,14 +8,22 @@
         class="avatar-img"
         src="{{user.avatarUrl}}"
         mode="aspectFill"
+        bindtap="changeAvatar"
       />
-      <view wx:else class="avatar">👤</view>
+      <view wx:else class="avatar" bindtap="changeAvatar">👤</view>
       <view class="profile-info">
-        <text class="name">{{user ? (user.nickname || '微信用户') : '未登录'}}</text>
-        <text class="helper">{{user ? '已登录' : '点击下方按钮去登录'}}</text>
+        <text class="name">
+          {{user ? (user.nickname || user.username || '未设置昵称') : '未登录'}}
+        </text>
+        <text class="meta-line" wx:if="{{user}}">
+          账号：{{user.username || '—'}}
+        </text>
+        <text class="helper">
+          {{!user ? '点击下方按钮去登录' : (user.userType === 2 ? '管理员账号' : '普通用户')}}
+        </text>
       </view>
-      <view class="status-chip {{token ? 'status-chip-online' : 'status-chip-offline'}}">
-        {{token ? '已登录' : '未登录'}}
+      <view class="status-chip {{!token ? 'status-chip-offline' : (user && user.status !== 1 ? 'status-chip-error' : 'status-chip-online')}}">
+        {{!token ? '未登录' : (user && user.status !== 1 ? '账号异常' : '已登录')}}
       </view>
     </view>
     <view class="auth-actions">

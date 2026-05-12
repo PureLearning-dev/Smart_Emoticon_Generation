@@ -24,8 +24,15 @@ function searchByText(query, topK) {
  */
 function searchByImageUrl(imageUrl, topK) {
   return requestService.request({
-    url: `${API.search.imageUrl}?url=${encodeURIComponent(imageUrl)}&topK=${topK || 10}`,
-    method: "POST"
+    url: API.search.imageUrl,
+    method: "POST",
+    header: {
+      "Content-Type": "application/json"
+    },
+    data: {
+      url: imageUrl,
+      topK: topK || 10
+    }
   });
 }
 

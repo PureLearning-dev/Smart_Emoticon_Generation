@@ -18,7 +18,7 @@ public interface AuthService {
      * @param request 账号与明文密码
      * @return token 与 user 视图
      */
-    WechatLoginResponse login(LoginRequest request);
+    WechatLoginResponse login (LoginRequest request);
 
     /**
      * 注册新用户并签发 JWT（注册即登录）。

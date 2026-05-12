@@ -1,8 +1,9 @@
 /**
  * 用户中心逻辑
- * 职责：头像与昵称、登录/退出、功能列表（我的生成、清除缓存、免责声明、我的收藏、关于我们、帮助）
+ * 职责：头像与昵称、登录/退出、头像上传、功能列表（我的生成、清除缓存、免责声明、我的收藏、关于我们、帮助）
  */
-const { getUserState, clearUserState } = require("../../store/user");
+const { getUserState, setUserState, clearUserState } = require("../../store/user");
+const { uploadAvatar } = require("../../services/user");
 
 Page({
   data: {
@@ -22,6 +23,45 @@ Page({
     this.setData({
       token: state.token || "",
       user: state.user || null
+    });
+  },
+
+  /**
+   * 更换头像：选择图片并上传到后端，成功后更新本地用户信息。
+   */
+  changeAvatar() {
+    if (!this.data.token) {
+      wx.showToast({ title: "请先登录后再设置头像", icon: "none" });
+      return;
+    }
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
+      sizeType: ["compressed"],
+      success: async (res) => {
+        const filePath = res.tempFiles && res.tempFiles[0] ? res.tempFiles[0].tempFilePath : "";
+        if (!filePath) return;
+        wx.showLoading({ title: "上传中...", mask: true });
+        try {
+          const data = await uploadAvatar(filePath);
+          const avatarUrl = data.avatarUrl || data.url || "";
+          if (!avatarUrl) {
+            wx.showToast({ title: "头像上传失败", icon: "none" });
+            return;
+          }
+          const state = getUserState();
+          const user = state.user || {};
+          const updatedUser = Object.assign({}, user, { avatarUrl });
+          setUserState(state.token || "", updatedUser);
+          this.setData({ user: updatedUser });
+          wx.showToast({ title: "头像已更新", icon: "success" });
+        } catch (e) {
+          // 具体错误提示已在 request.upload 中统一处理
+        } finally {
+          wx.hideLoading();
+        }
+      }
     });
   },
 
