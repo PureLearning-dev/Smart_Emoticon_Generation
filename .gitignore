@@ -11,3 +11,14 @@ minio_data/
 # IDE
 .idea/
 .vscode/
+
+# Build / deps (do not commit)
+**/node_modules/
+**/dist/
+**/target/
+.venv*/
+**/.venv*/
+smart_meter/.m2/
+
+# Admin local env (keep .env.example)
+admin-web/.env

@@ -2,6 +2,8 @@
 
 根目录
 
+- [x] **仓库维护（2026-05）**：根目录散落资料移至 `docs/notes`、`docs/diagrams`、`docs/assets`；`Function.md` 路径更新为 `docs/notes/Function.md`；根 `.gitignore` 补充 `node_modules`/`dist`/`target`/`.venv*`/`smart_meter/.m2`/`admin-web/.env`；删除误置于 `smart_meter/.m2` 的本地 Maven 缓存（功能不变，验证：`mvn compile`、`admin-web npm run build` 通过）。
+
 ## 安装和配置
 
 - [x] 项目初始化
@@ -82,7 +84,7 @@
   * [x] 执行 `SQL/schema.sql` 创建 `users`、`meme_assets` 表（确认库名与 `application.yaml` 一致）
   * [x] 新增中期页面所需表结构：`plaza_contents`（公共广场）与 `user_generated_images`（我的生成）
   * [x] 新增公共广场详情表：`plaza_articles`（支持点击文章查看正文）
-  * [x] 新增功能设计文档：`Function.md`（记录原理、表关系、查询流程与实现细节）
+  * [x] 新增功能设计文档：`docs/notes/Function.md`（记录原理、表关系、查询流程与实现细节）
   * [x] 新增首页文章推荐基础层与接口：`PlazaContent`、`PlazaArticle`、`PlazaService`、`PlazaController`
   * [x] 新增首页文章推荐接口：`GET /api/plaza/recommendations`、`GET /api/plaza/recommendations/{id}`
   * [x] 公共广场用户生成图列表：GET /api/plaza/contents（keyword、styleTag 模糊筛选，分页），小程序广场页瀑布流+搜索+style_tag+加载更多

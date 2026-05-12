@@ -71,7 +71,7 @@
   - `# 万相（写实/艺术/参考图）：wan2.6-image`
   - `# 千问文生图（带文字的海报、排版）：qwen-image-2.0-pro`
   - `BAILIAN_IMAGE_MODEL=wan2.6-image`
-- 在 **TODO.md** 或 **Function.md** 中更新：已支持通过配置切换为 Qwen-Image 文生图，用于「由模型直接生成带文字的图」。
+- 在 **TODO.md** 或 **docs/notes/Function.md** 中更新：已支持通过配置切换为 Qwen-Image 文生图，用于「由模型直接生成带文字的图」。
 
 ---
 

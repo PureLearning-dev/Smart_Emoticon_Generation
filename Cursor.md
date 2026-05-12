@@ -10,10 +10,18 @@ SMART_METER_CONDITION/
 ├── ai-kore/                # Python项目根目录
 ├── smart_meter/            # SpringBoot项目根目录
 ├── miniapp/                # 微信小程序前端
+├── admin-web/              # React 管理后台（Vite）
 ├── SQL/                    # 项目SQL代码目录
-├── Cursor.md               # 项目详细结构说明和功能分配     
-├── TODO.md                 # 项目的详细任务列表                 
+├── docs/                   # 论文、图表、脚本说明、设计笔记（勿在根目录堆资料文件）
+│   ├── notes/              # 如 Function.md、description.md
+│   ├── diagrams/           # 如 ER 导出图
+│   └── assets/             # 截图等杂项资源
+├── Cursor.md               # 项目详细结构说明和功能分配
+├── TODO.md                 # 项目的详细任务列表
+├── README.md / Makefile / docker-compose.yml 等根级工程文件
 ```
+
+**根目录约定**：业务代码仅保留在各子项目目录内；论文、截图、零散说明统一放入 `docs/` 对应子目录；`node_modules`、`dist`、`target`、本地 venv、误放的 `smart_meter/.m2` 不入库（见根目录 `.gitignore`）。
 
 ## [ai-kore]项目结构
 
