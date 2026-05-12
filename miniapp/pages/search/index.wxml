@@ -1,7 +1,13 @@
 <view class="page">
-  <view class="card list-card">
-    <text class="title">智能搜索</text>
-    <text class="subtitle">文本搜图 / 图搜图 / URL 搜图</text>
+  <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <text class="eyebrow">AI SEARCH</text>
+        <text class="title">智能搜索</text>
+      </view>
+      <text class="hero-badge">广场图源</text>
+    </view>
+    <text class="subtitle">支持文字、上传图片和图片链接，多方式查找相似表情包。</text>
 
     <view class="mode-row">
       <view
@@ -9,63 +15,97 @@
         data-mode="text"
         bindtap="switchMode"
       >
-        文本
+        <text class="mode-title">文字搜图</text>
+        <text class="mode-desc">按语义匹配</text>
       </view>
       <view
         class="mode-btn {{mode==='image' ? 'mode-btn-active' : ''}}"
         data-mode="image"
         bindtap="switchMode"
       >
-        上传图片
+        <text class="mode-title">上传图片</text>
+        <text class="mode-desc">找相似图</text>
       </view>
       <view
         class="mode-btn {{mode==='url' ? 'mode-btn-active' : ''}}"
         data-mode="url"
         bindtap="switchMode"
       >
-        图片 URL
+        <text class="mode-title">图片链接</text>
+        <text class="mode-desc">URL 搜图</text>
       </view>
-    </view>
-
-    <view wx:if="{{mode==='text'}}" class="search-panel">
-      <input
-        class="input"
-        placeholder="请输入搜索关键词"
-        placeholder-class="placeholder"
-        value="{{keyword}}"
-        bindinput="onInputKeyword"
-      />
-      <button class="primary-btn" bindtap="onSearchAction">开始搜索</button>
-    </view>
-
-    <view wx:if="{{mode==='url'}}" class="search-panel">
-      <input
-        class="input"
-        placeholder="请输入图片 URL"
-        placeholder-class="placeholder"
-        value="{{imageUrl}}"
-        bindinput="onInputImageUrl"
-      />
-      <button class="primary-btn" bindtap="onSearchAction">URL 搜图</button>
-    </view>
-
-    <view wx:if="{{mode==='image'}}" class="search-panel">
-      <view class="upload-card">
-        <text class="upload-tip">从相册/相机选择图片后自动搜索</text>
-        <text wx:if="{{imagePath}}" class="helper">已选择：{{imagePath}}</text>
-      </view>
-      <button class="primary-btn" bindtap="onSearchAction">选择并搜索</button>
     </view>
   </view>
 
-  <view class="card">
-    <view class="section-head">
-      <text class="section-title">搜索结果</text>
-      <text class="section-desc">{{list.length}} 条</text>
+  <view class="card search-card">
+    <view wx:if="{{mode==='text'}}" class="search-panel">
+      <view class="input-wrap">
+        <text class="input-label">关键词</text>
+        <input
+          class="input"
+          placeholder="例如：开心、拒绝、加油、打工人"
+          placeholder-class="placeholder"
+          value="{{keyword}}"
+          confirm-type="search"
+          bindinput="onInputKeyword"
+          bindconfirm="onSearchAction"
+        />
+      </view>
+      <view class="hint-row">
+        <text class="hint-chip">表情语义</text>
+        <text class="hint-chip">使用场景</text>
+        <text class="hint-chip">风格标签</text>
+      </view>
+      <button class="primary-btn" loading="{{loading}}" bindtap="onSearchAction">开始搜索</button>
     </view>
 
-    <view wx:if="{{loading}}" class="state-text">加载中...</view>
-    <view wx:elif="{{list.length===0}}" class="state-text">暂无结果，试试其他关键词</view>
+    <view wx:if="{{mode==='url'}}" class="search-panel">
+      <view class="input-wrap">
+        <text class="input-label">图片链接</text>
+        <input
+          class="input"
+          placeholder="粘贴 http/https 图片地址"
+          placeholder-class="placeholder"
+          value="{{imageUrl}}"
+          confirm-type="search"
+          bindinput="onInputImageUrl"
+          bindconfirm="onSearchAction"
+        />
+      </view>
+      <text class="helper">适合用网页图片快速查找相似表情包。</text>
+      <button class="primary-btn" loading="{{loading}}" bindtap="onSearchAction">URL 搜图</button>
+    </view>
+
+    <view wx:if="{{mode==='image'}}" class="search-panel">
+      <view class="upload-card" bindtap="onSearchAction">
+        <view class="upload-icon">IMG</view>
+        <view class="upload-copy">
+          <text class="upload-tip">从相册/相机选择图片</text>
+          <text class="helper">选择后会自动上传并搜索相似结果。</text>
+        </view>
+      </view>
+      <text wx:if="{{imagePath}}" class="selected-path">已选择：{{imagePath}}</text>
+      <button class="primary-btn" loading="{{loading}}" bindtap="onSearchAction">选择并搜索</button>
+    </view>
+  </view>
+
+  <view class="card result-card">
+    <view class="section-head">
+      <view>
+        <text class="section-title">搜索结果</text>
+        <text class="section-subtitle">点击卡片查看生成图详情</text>
+      </view>
+      <text class="section-count">{{list.length}} 条</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="state-wrap">
+      <view class="state-dot"></view>
+      <text class="state-text">正在搜索相似表情包...</text>
+    </view>
+    <view wx:elif="{{list.length===0}}" class="state-wrap empty-state">
+      <text class="empty-title">还没有搜索结果</text>
+      <text class="state-text">输入关键词、选择图片，或粘贴图片链接开始搜索。</text>
+    </view>
 
     <view wx:else class="waterfall">
       <view class="waterfall-inner">
@@ -79,7 +119,10 @@
           <image class="card-image" src="{{item.generatedImageUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}" mode="widthFix" />
           <view class="card-body">
             <text class="card-usage">{{item.usageScenario || '日常'}}</text>
-            <text class="card-style">{{item.styleTag || '日常'}}</text>
+            <view class="card-meta">
+              <text class="card-style">{{item.styleTag || '日常'}}</text>
+              <text class="card-more">查看</text>
+            </view>
           </view>
         </view>
       </view>

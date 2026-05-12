@@ -3,6 +3,8 @@
 根目录
 
 - [x] **仓库维护（2026-05）**：根目录散落资料移至 `docs/notes`、`docs/diagrams`、`docs/assets`；`Function.md` 路径更新为 `docs/notes/Function.md`；根 `.gitignore` 补充 `node_modules`/`dist`/`target`/`.venv*`/`smart_meter/.m2`/`admin-web/.env`；删除误置于 `smart_meter/.m2` 的本地 Maven 缓存（功能不变，验证：`mvn compile`、`admin-web npm run build` 通过）。
+- [x] **小程序搜索页视觉优化（2026-05）**：优化 `pages/search`、`pages/search-text`、`pages/search-image` 的头图区、输入区、上传区、结果卡片与空/加载状态，统一为浅灰背景、白色卡片、圆角阴影和 `#07c160` 浅绿色强调色；仅调整 WXML/WXSS 展示层，不改搜索接口、数据映射和详情跳转逻辑。
+- [x] **小程序首页项目描述优化（2026-05）**：优化 `pages/home` 顶部项目介绍组件，增加浅绿色渐变卡片、能力标签和核心技术摘要，仅调整 WXML/WXSS 展示层，不改首页推荐接口与跳转逻辑。
 
 ## 安装和配置
 

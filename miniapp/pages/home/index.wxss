@@ -15,41 +15,137 @@
   box-shadow: 0 6rpx 20rpx rgba(31, 35, 41, 0.06);
 }
 
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ffffff 0%, #f3fff8 100%);
+  border-radius: 28rpx;
+  padding: 32rpx;
+  box-shadow: 0 12rpx 36rpx rgba(7, 193, 96, 0.12);
+}
+
+.hero-glow {
+  position: absolute;
+  right: -90rpx;
+  top: -90rpx;
+  width: 260rpx;
+  height: 260rpx;
+  border-radius: 50%;
+  background: rgba(7, 193, 96, 0.14);
+}
+
 .title-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12rpx;
 }
 
+.eyebrow {
+  display: block;
+  margin-bottom: 8rpx;
+  font-size: 22rpx;
+  color: #07c160;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
 .title {
-  font-size: 36rpx;
-  color: #333333;
-  font-weight: 600;
+  display: block;
+  font-size: 42rpx;
+  color: #1f2329;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .tag {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
   font-size: 24rpx;
   color: #07c160;
-  background: rgba(7, 193, 96, 0.1);
+  background: #ffffff;
+  border: 2rpx solid rgba(7, 193, 96, 0.16);
   border-radius: 999rpx;
-  padding: 6rpx 16rpx;
+  padding: 8rpx 18rpx;
+  box-shadow: 0 8rpx 18rpx rgba(7, 193, 96, 0.08);
 }
 
 .hero-slogan {
-  margin-top: 12rpx;
+  position: relative;
+  z-index: 1;
+  margin-top: 20rpx;
   display: block;
   font-size: 28rpx;
-  color: #666666;
-  line-height: 1.5;
+  color: #4e5969;
+  line-height: 1.65;
+}
+
+.feature-row {
+  position: relative;
+  z-index: 1;
+  margin-top: 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.feature-chip {
+  padding: 10rpx 20rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  color: #07c160;
+  background: rgba(7, 193, 96, 0.1);
+}
+
+.hero-metrics {
+  position: relative;
+  z-index: 1;
+  margin-top: 28rpx;
+  padding: 22rpx 18rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2rpx solid rgba(7, 193, 96, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.metric-value {
+  font-size: 26rpx;
+  color: #1f2329;
+  font-weight: 700;
+}
+
+.metric-label {
+  font-size: 22rpx;
+  color: #86909c;
+}
+
+.metric-divider {
+  width: 2rpx;
+  height: 48rpx;
+  background: #edf1f5;
 }
 
 .tab-hint {
-  margin-top: 16rpx;
+  position: relative;
+  z-index: 1;
+  margin-top: 22rpx;
   display: block;
   font-size: 24rpx;
-  color: #999999;
-  line-height: 1.5;
+  color: #86909c;
+  line-height: 1.6;
 }
 
 .section-head {

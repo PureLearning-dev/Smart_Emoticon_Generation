@@ -1,35 +1,55 @@
 <view class="page">
-  <view class="card head-card">
-    <text class="title">图搜图</text>
-    <text class="subtitle">选择一张图片，查找相似表情包</text>
+  <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <text class="eyebrow">IMAGE SEARCH</text>
+        <text class="title">图搜图</text>
+      </view>
+      <text class="hero-badge">广场图源</text>
+    </view>
+    <text class="subtitle">选择一张图片，系统会在用户公开生成图中查找相似表情包。</text>
+
     <view class="upload-panel">
       <view wx:if="{{!imagePath}}" class="choose-area" bindtap="chooseImage">
-        <text class="choose-icon">🖼️</text>
+        <view class="choose-mark">IMG</view>
         <text class="choose-tip">点击选择图片</text>
-        <text class="choose-desc">从相册或相机选择</text>
+        <text class="choose-desc">支持相册或相机，建议使用清晰表情包图片</text>
       </view>
       <view wx:else class="preview-area">
         <image class="preview-img" src="{{imagePath}}" mode="aspectFill" />
+        <view class="preview-copy">
+          <text class="choose-tip">图片已选择</text>
+          <text class="choose-desc">可以重新选择，或直接开始搜图</text>
+        </view>
         <button type="default" class="ghost-btn" bindtap="chooseImage">重新选择</button>
       </view>
-      <button type="default" class="primary-btn" bindtap="onSearch">开始搜图</button>
+      <button type="default" class="primary-btn" loading="{{loading}}" bindtap="onSearch">开始搜图</button>
     </view>
   </view>
 
   <view class="card result-card">
     <view class="section-head">
-      <text class="section-title">搜索结果</text>
+      <view>
+        <text class="section-title">搜索结果</text>
+        <text class="section-subtitle">点击卡片查看详情</text>
+      </view>
       <text class="section-desc" wx:if="{{hasSearched && !loading}}">{{list.length}} 条</text>
     </view>
 
     <view wx:if="{{loading}}" class="state-wrap">
-      <text class="state-text">加载中...</text>
+      <view class="state-dot"></view>
+      <text class="state-text">正在匹配相似图片...</text>
     </view>
     <view wx:elif="{{error}}" class="state-wrap">
       <text class="state-text state-error">加载失败，请重试</text>
     </view>
     <view wx:elif="{{hasSearched && list.length === 0}}" class="state-wrap">
-      <text class="state-text">暂无结果，试试其他图片</text>
+      <text class="empty-title">暂无结果</text>
+      <text class="state-text">换一张主体更清晰的图片再试试。</text>
+    </view>
+    <view wx:elif="{{!hasSearched}}" class="state-wrap">
+      <text class="empty-title">选择图片开始搜索</text>
+      <text class="state-text">适合查找同语义、相似画风或相似构图的表情包。</text>
     </view>
     <view wx:elif="{{list.length > 0}}" class="waterfall">
       <view class="waterfall-inner">
@@ -47,7 +67,10 @@
           />
           <view class="card-body">
             <text class="card-usage">{{item.usageScenario || '日常'}}</text>
-            <text class="card-style">{{item.styleTag || '日常'}}</text>
+            <view class="card-meta">
+              <text class="card-style">{{item.styleTag || '日常'}}</text>
+              <text class="card-more">查看</text>
+            </view>
           </view>
         </view>
       </view>

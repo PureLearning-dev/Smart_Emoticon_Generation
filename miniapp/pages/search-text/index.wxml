@@ -1,33 +1,53 @@
 <view class="page">
-  <view class="card head-card">
-    <text class="title">文本搜图</text>
-    <text class="subtitle">输入关键词，查找相关表情包</text>
+  <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <text class="eyebrow">TEXT SEARCH</text>
+        <text class="title">文本搜图</text>
+      </view>
+      <text class="hero-badge">广场图源</text>
+    </view>
+    <text class="subtitle">输入情绪、场景或风格关键词，快速找到适合聊天表达的表情包。</text>
     <view class="search-panel">
-      <input
-        class="input"
-        placeholder="请输入搜索关键词"
-        placeholder-class="placeholder"
-        value="{{keyword}}"
-        bindinput="onInputKeyword"
-      />
-      <button type="default" class="primary-btn" bindtap="onSearch">开始搜索</button>
+      <view class="input-wrap">
+        <text class="input-label">关键词</text>
+        <input
+          class="input"
+          placeholder="例如：开心、拒绝、摸鱼、加油"
+          placeholder-class="placeholder"
+          value="{{keyword}}"
+          confirm-type="search"
+          bindinput="onInputKeyword"
+          bindconfirm="onSearch"
+        />
+      </view>
+      <button type="default" class="primary-btn" loading="{{loading}}" bindtap="onSearch">开始搜索</button>
     </view>
   </view>
 
   <view class="card list-card">
     <view class="section-head">
-      <text class="section-title">搜索结果</text>
+      <view>
+        <text class="section-title">搜索结果</text>
+        <text class="section-subtitle">点击卡片查看详情</text>
+      </view>
       <text class="section-desc" wx:if="{{hasSearched && !loading}}">{{list.length}} 条</text>
     </view>
 
     <view wx:if="{{loading}}" class="state-wrap">
-      <text class="state-text">加载中...</text>
+      <view class="state-dot"></view>
+      <text class="state-text">正在匹配相关表情包...</text>
     </view>
     <view wx:elif="{{error}}" class="state-wrap">
       <text class="state-text state-error">加载失败，请重试</text>
     </view>
     <view wx:elif="{{hasSearched && list.length === 0}}" class="state-wrap">
-      <text class="state-text">暂无结果，试试其他关键词</text>
+      <text class="empty-title">暂无结果</text>
+      <text class="state-text">换个关键词，或尝试更具体的使用场景。</text>
+    </view>
+    <view wx:elif="{{!hasSearched}}" class="state-wrap">
+      <text class="empty-title">输入关键词开始搜索</text>
+      <text class="state-text">支持按表情含义、聊天场景和风格标签搜索。</text>
     </view>
     <view wx:elif="{{list.length > 0}}" class="waterfall">
       <view class="waterfall-inner">
@@ -40,12 +60,15 @@
         >
           <image
             class="card-image"
-            src="{{item.generatedImageUrl}}"
+            src="{{item.generatedImageUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}"
             mode="widthFix"
           />
           <view class="card-body">
             <text class="card-usage">{{item.usageScenario || '日常'}}</text>
-            <text class="card-style">{{item.styleTag || '日常'}}</text>
+            <view class="card-meta">
+              <text class="card-style">{{item.styleTag || '日常'}}</text>
+              <text class="card-more">查看</text>
+            </view>
           </view>
         </view>
       </view>
