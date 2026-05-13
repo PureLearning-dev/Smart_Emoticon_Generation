@@ -6,6 +6,8 @@ import type {
   AdminUserPayload,
   GeneratedImage,
   GeneratedImagePayload,
+  MemeAssetPayload,
+  MemeAssetRow,
   PlazaArticle,
   PlazaArticlePayload,
   PlazaContent,
@@ -184,5 +186,26 @@ export async function updatePlazaArticle(id: number, payload: PlazaArticlePayloa
 
 export async function deletePlazaArticle(id: number): Promise<boolean> {
   const { data } = await apiClient.delete<boolean>(`/api/admin/plaza-articles/${id}`)
+  return Boolean(data)
+}
+
+/** 爬虫素材 meme_assets 列表（管理端） */
+export async function fetchMemeAssets(): Promise<MemeAssetRow[]> {
+  const { data } = await apiClient.get<MemeAssetRow[]>('/api/admin/meme-assets')
+  return Array.isArray(data) ? data : []
+}
+
+export async function createMemeAsset(payload: MemeAssetPayload): Promise<MemeAssetRow> {
+  const { data } = await apiClient.post<MemeAssetRow>('/api/admin/meme-assets', payload)
+  return data
+}
+
+export async function updateMemeAsset(id: number, payload: MemeAssetPayload): Promise<MemeAssetRow> {
+  const { data } = await apiClient.put<MemeAssetRow>(`/api/admin/meme-assets/${id}`, payload)
+  return data
+}
+
+export async function deleteMemeAsset(id: number): Promise<boolean> {
+  const { data } = await apiClient.delete<boolean>(`/api/admin/meme-assets/${id}`)
   return Boolean(data)
 }

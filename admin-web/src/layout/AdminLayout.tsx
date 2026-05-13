@@ -1,5 +1,6 @@
 import { Layout, Menu, theme } from 'antd'
 import {
+  AppstoreOutlined,
   CloudDownloadOutlined,
   DashboardOutlined,
   FileTextOutlined,
@@ -21,6 +22,7 @@ export default function AdminLayout() {
     if (location.pathname.startsWith('/users')) return ['/users']
     if (location.pathname.startsWith('/generated-images')) return ['/generated-images']
     if (location.pathname.startsWith('/plaza')) return ['/plaza']
+    if (location.pathname.startsWith('/crawled-assets')) return ['/crawled-assets']
     if (location.pathname.startsWith('/crawl')) return ['/crawl']
     return ['/']
   })()
@@ -60,6 +62,12 @@ export default function AdminLayout() {
               icon: <FileTextOutlined />,
               label: '广场文章',
               onClick: () => navigate('/plaza'),
+            },
+            {
+              key: '/crawled-assets',
+              icon: <AppstoreOutlined />,
+              label: '爬取素材',
+              onClick: () => navigate('/crawled-assets'),
             },
             {
               key: '/crawl',

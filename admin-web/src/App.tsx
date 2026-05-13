@@ -5,6 +5,7 @@ import AdminLayout from '@/layout/AdminLayout'
 import CrawlPage from '@/pages/Crawl'
 import DashboardPage from '@/pages/Dashboard'
 import GeneratedImagesPage from '@/pages/GeneratedImages'
+import MemeAssetsPage from '@/pages/MemeAssets'
 import LoginPage from '@/pages/Login'
 import PlazaManagePage from '@/pages/PlazaManage'
 import UsersPage from '@/pages/Users'
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="/generated-images" element={<GeneratedImagesPage />} />
         <Route path="/plaza" element={<PlazaManagePage />} />
         <Route path="/crawl" element={<CrawlPage />} />
+        <Route path="/crawled-assets" element={<MemeAssetsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

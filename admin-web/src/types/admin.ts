@@ -79,6 +79,28 @@ export interface PlazaArticle {
 
 export type PlazaArticlePayload = Omit<PlazaArticle, 'id' | 'createTime' | 'updateTime'>
 
+/** 爬虫入库素材 meme_assets（与后端实体字段 camelCase 对齐） */
+export interface MemeAssetRow {
+  id: number
+  title?: string
+  fileUrl?: string
+  thumbnailUrl?: string
+  ocrText?: string
+  description?: string
+  contentText?: string
+  styleTag?: string
+  usageScenario?: string
+  sourceType?: number
+  source?: string
+  embeddingId?: string
+  status?: number
+  isPublic?: number
+  createTime?: string
+  updateTime?: string
+}
+
+export type MemeAssetPayload = Omit<MemeAssetRow, 'id' | 'createTime' | 'updateTime'>
+
 /** 管理后台首页聚合统计（与 GET /api/admin/stats 对齐） */
 export interface AdminStats {
   userTotal: number
