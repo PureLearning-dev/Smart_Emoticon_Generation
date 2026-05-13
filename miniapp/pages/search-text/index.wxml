@@ -5,9 +5,9 @@
         <text class="eyebrow">TEXT SEARCH</text>
         <text class="title">文本搜图</text>
       </view>
-      <text class="hero-badge">广场图源</text>
+      <text class="hero-badge">素材库图源</text>
     </view>
-    <text class="subtitle">输入情绪、场景或风格关键词，快速找到适合聊天表达的表情包。</text>
+    <text class="subtitle">输入情绪、场景或风格关键词，在爬虫入库素材中快速找到适合聊天表达的表情包。</text>
     <view class="search-panel">
       <view class="input-wrap">
         <text class="input-label">关键词</text>
@@ -56,6 +56,8 @@
           wx:for="{{list}}"
           wx:key="id"
           data-id="{{item.id}}"
+          data-file-url="{{item.fileUrl}}"
+          data-ocr-text="{{item.ocrText}}"
           bindtap="goDetail"
         >
           <image

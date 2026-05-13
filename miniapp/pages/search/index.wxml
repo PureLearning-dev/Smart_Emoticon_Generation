@@ -5,9 +5,9 @@
         <text class="eyebrow">AI SEARCH</text>
         <text class="title">智能搜索</text>
       </view>
-      <text class="hero-badge">广场图源</text>
+      <text class="hero-badge">素材库图源</text>
     </view>
-    <text class="subtitle">支持文字、上传图片和图片链接，多方式查找相似表情包。</text>
+    <text class="subtitle">支持文字、上传图片和图片链接，在爬虫入库素材中查找相似表情包。</text>
 
     <view class="mode-row">
       <view
@@ -93,7 +93,7 @@
     <view class="section-head">
       <view>
         <text class="section-title">搜索结果</text>
-        <text class="section-subtitle">点击卡片查看生成图详情</text>
+        <text class="section-subtitle">点击卡片查看素材详情</text>
       </view>
       <text class="section-count">{{list.length}} 条</text>
     </view>
@@ -114,6 +114,8 @@
           wx:for="{{list}}"
           wx:key="id"
           data-id="{{item.id}}"
+          data-file-url="{{item.fileUrl}}"
+          data-ocr-text="{{item.ocrText}}"
           bindtap="goDetail"
         >
           <image class="card-image" src="{{item.generatedImageUrl || 'https://dummyimage.com/800x480/f7f8fa/999999&text=No+Image'}}" mode="widthFix" />

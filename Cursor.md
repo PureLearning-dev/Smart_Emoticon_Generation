@@ -312,9 +312,9 @@ smart_meter/                                    # Spring Boot 主业务微服务
 
 ### 小程序搜索入口与数据源（重要）
 
-- **首页「文本搜图」**：跳转 **pages/meme-search-text/index**，使用 **services/memeSearch.js** → **GET /api/meme-search** → 后端 **MemeSearchController** → ai-kore **meme_embeddings** → 回表 **meme_assets**（素材库/爬虫表）。结果条数受爬虫表数据量约束。
-- **首页「图搜图」**：跳转 **pages/meme-search-image/index**，使用 **services/memeSearch.js** → **POST /api/meme-search/image**（上传）→ 同上，数据源也是 **meme_assets**。
-- **公共广场搜图（用户生成表）**：保留为独立入口，页面 **pages/search-text**、**pages/search-image** 调用 **GET /api/search**、**POST /api/search/image**，数据源 **user_generated_embeddings** + **user_generated_images**；可从公共广场页内或其它入口进入，不在首页默认搜图路径。
+- **小程序搜索功能页（Tab 搜索、文本搜图、图搜图）**：页面 **pages/search**、**pages/search-text**、**pages/search-image** 均使用 **services/memeSearch.js** → **GET /api/meme-search**、**POST /api/meme-search/image**、**POST /api/meme-search/image/url**，后端 **MemeSearchController** → ai-kore **meme_embeddings** → 回表 **meme_assets**（素材库/爬虫表）。搜索结果 id 为 meme_assets 主键，详情跳转 **pages/detail**。
+- **首页「文本搜图」/「图搜图」**：仍可跳转 **pages/meme-search-text/index**、**pages/meme-search-image/index**，同样走 **services/memeSearch.js** 和素材库数据源。
+- **公共广场数据源（用户生成表）**：广场页 **pages/plaza** 只展示/筛选 **user_generated_images** 中公开内容；若未来需要广场向量搜，才使用 **services/search.js** → **GET /api/search**、**POST /api/search/image**，不得混入爬虫素材搜索页。
 
 ### 微信小程序 miniapp
 

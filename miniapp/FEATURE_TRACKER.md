@@ -19,9 +19,9 @@
 | F-001 | 微信登录 | 登录页 / 我的页 | `POST /api/auth/wechat/login` | 已实现 | 已完成页面与调用逻辑，待联调 |
 | F-002 | 开发假登录 | 开发环境 | `POST /api/auth/wechat/login-mock` | 已实现 | 已完成 mock 登录按钮与调用逻辑 |
 | F-003 | 登录态校验 | App 启动流程 | `GET /api/auth/verify` | 已实现 | 用户页已支持 token 校验 |
-| F-004 | 文本搜索表情包 | 搜索页 | `GET /api/search` | 已实现 | 已完成文本搜索交互与结果展示 |
-| F-005 | 上传图片搜图 | 搜索页 | `POST /api/search/image` | 已实现 | 已完成选图上传与结果展示 |
-| F-006 | URL 图片搜图 | 搜索页 | `POST /api/search/image/url` | 已实现 | 已完成 URL 输入与结果展示 |
+| F-004 | 文本搜索表情包 | 搜索页 | `GET /api/meme-search` | 已实现 | 搜索页统一检索爬虫素材库（meme_embeddings + meme_assets） |
+| F-005 | 上传图片搜图 | 搜索页 | `POST /api/meme-search/image` | 已实现 | 上传图片向量化后在爬虫素材库中检索 |
+| F-006 | URL 图片搜图 | 搜索页 | `POST /api/meme-search/image/url` | 已实现 | URL 图片向量化后在爬虫素材库中检索 |
 | F-007 | 素材列表浏览 | 推荐页 | `GET /api/meme-assets` | 开发中 | 当前推荐区为静态卡片占位 |
 | F-008 | 素材详情查看 | 详情页 | `GET /api/meme-assets/{id}` | 已实现 | 支持按 id 加载详情和参数兜底 |
 | F-009 | 公共广场内容浏览 | 公共广场页 | 待补充（后端广场接口） | 已实现 | 当前为静态公开内容，支持点击占位 |

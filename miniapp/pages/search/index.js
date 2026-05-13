@@ -1,12 +1,23 @@
 /**
  * 搜索页逻辑
- * 职责：文本搜图、上传图搜图、URL 图搜图，并展示结果列表
+ * 职责：在爬虫入库素材（meme_assets）中执行文本搜图、上传图搜图、URL 图搜图，并展示结果列表
  */
 const {
-  searchByText,
-  searchByImageUrl,
-  searchByImageFile
-} = require("../../services/search");
+  searchMemeByText,
+  searchMemeByImageUrl,
+  searchMemeByImageFile
+} = require("../../services/memeSearch");
+
+function mapMemeSearchResult(item) {
+  return {
+    id: item.id,
+    fileUrl: item.fileUrl || item.generatedImageUrl || "",
+    ocrText: item.ocrText || "",
+    generatedImageUrl: item.fileUrl || item.generatedImageUrl || "",
+    usageScenario: item.usageScenario || item.ocrText || "",
+    styleTag: item.styleTag || "素材库"
+  };
+}
 
 Page({
   data: {
@@ -94,14 +105,9 @@ Page({
 
     this.setData({ loading: true, list: [] });
     try {
-      const results = await searchByText(keyword, 10);
+      const results = await searchMemeByText(keyword, 10);
       const arr = Array.isArray(results) ? results : [];
-      const mapped = arr.map(item => ({
-        id: item.id,
-        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
-        usageScenario: item.usageScenario || item.promptText || item.ocrText || "",
-        styleTag: item.styleTag || "日常"
-      }));
+      const mapped = arr.map(mapMemeSearchResult);
       this.setData({ results: arr, list: mapped });
     } catch (e) {
       // 错误 toast 在 request 层已处理
@@ -122,14 +128,9 @@ Page({
 
     this.setData({ loading: true, list: [] });
     try {
-      const results = await searchByImageUrl(url, 10);
+      const results = await searchMemeByImageUrl(url, 10);
       const arr = Array.isArray(results) ? results : [];
-      const mapped = arr.map(item => ({
-        id: item.id,
-        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
-        usageScenario: item.usageScenario || item.promptText || item.usageScenario || "",
-        styleTag: item.styleTag || "日常"
-      }));
+      const mapped = arr.map(mapMemeSearchResult);
       this.setData({ results: arr, list: mapped });
     } catch (e) {
       // 错误 toast 在 request 层已处理
@@ -153,14 +154,9 @@ Page({
         }
         this.setData({ imagePath: filePath, loading: true, list: [] });
         try {
-          const results = await searchByImageFile(filePath, 10);
+          const results = await searchMemeByImageFile(filePath, 10);
           const arr = Array.isArray(results) ? results : [];
-          const mapped = arr.map(item => ({
-            id: item.id,
-            generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
-            usageScenario: item.usageScenario || item.promptText || item.usageScenario || "",
-            styleTag: item.styleTag || "日常"
-          }));
+          const mapped = arr.map(mapMemeSearchResult);
           this.setData({ results: arr, list: mapped });
         } catch (e) {
           // 错误 toast 在 request 层已处理
@@ -194,10 +190,13 @@ Page({
    */
   goDetail(e) {
     const id = e.currentTarget.dataset.id || "";
+    const fileUrl = e.currentTarget.dataset.fileUrl || "";
+    const ocrText = e.currentTarget.dataset.ocrText || "";
     if (!id) return;
+    const urlEnc = fileUrl ? encodeURIComponent(fileUrl) : "";
+    const ocrEnc = ocrText ? encodeURIComponent(ocrText) : "";
     wx.navigateTo({
-      // 与文本搜图一致：复用生成图详情页的卡片与信息布局
-      url: `/pages/generated-detail/index?id=${encodeURIComponent(id)}`
+      url: `/pages/detail/index?id=${encodeURIComponent(id)}&fileUrl=${urlEnc}&ocrText=${ocrEnc}`
     });
   }
 });

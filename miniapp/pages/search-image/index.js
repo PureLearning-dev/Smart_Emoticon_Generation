@@ -1,8 +1,8 @@
 /**
  * 图搜图页
- * 职责：仅支持本地选图搜索，展示结果列表
+ * 职责：在爬虫入库素材（meme_assets）中执行本地选图搜索，展示结果列表
  */
-const { searchByImageFile } = require("../../services/search");
+const { searchMemeByImageFile } = require("../../services/memeSearch");
 
 const PAGE_SIZE = 10;
 
@@ -54,13 +54,15 @@ Page({
 
     this.setData({ loading: true, error: false, hasSearched: true, list: [] });
     try {
-      const results = await searchByImageFile(imagePath, PAGE_SIZE);
+      const results = await searchMemeByImageFile(imagePath, PAGE_SIZE);
       const arr = Array.isArray(results) ? results : [];
       const mapped = arr.map(item => ({
         id: item.id,
-        generatedImageUrl: item.generatedImageUrl || item.fileUrl || "",
-        usageScenario: item.usageScenario || item.promptText || item.ocrText || "",
-        styleTag: item.styleTag || "日常"
+        fileUrl: item.fileUrl || item.generatedImageUrl || "",
+        ocrText: item.ocrText || "",
+        generatedImageUrl: item.fileUrl || item.generatedImageUrl || "",
+        usageScenario: item.usageScenario || item.ocrText || "",
+        styleTag: item.styleTag || "素材库"
       }));
       this.setData({
         results: arr,
@@ -80,10 +82,13 @@ Page({
 
   goDetail(e) {
     const id = e.currentTarget.dataset.id || "";
+    const fileUrl = e.currentTarget.dataset.fileUrl || "";
+    const ocrText = e.currentTarget.dataset.ocrText || "";
     if (!id) return;
+    const urlEnc = fileUrl ? encodeURIComponent(fileUrl) : "";
+    const ocrEnc = ocrText ? encodeURIComponent(ocrText) : "";
     wx.navigateTo({
-      // 复用生成图详情页的卡片与信息布局，与文本搜图一致
-      url: `/pages/generated-detail/index?id=${encodeURIComponent(id)}`
+      url: `/pages/detail/index?id=${encodeURIComponent(id)}&fileUrl=${urlEnc}&ocrText=${ocrEnc}`
     });
   }
 });

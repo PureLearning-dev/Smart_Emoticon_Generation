@@ -1,6 +1,9 @@
 /**
- * 搜索服务
- * 职责：封装文本搜图与图搜图接口
+ * 公共广场向量搜索服务（历史/广场专用）。
+ *
+ * 注意：小程序「搜索」Tab 与搜索功能页应使用 services/memeSearch.js，
+ * 检索爬虫素材库（meme_embeddings + meme_assets）。本文件仅保留给明确需要
+ * user_generated_embeddings + user_generated_images 的广场搜索场景，避免误用。
  */
 const API = require("../config/api");
 const requestService = require("./request");

@@ -9,19 +9,19 @@
 
 | 数据源 | Milvus 集合 | MySQL 回表 | 后端接口 | 小程序页面 |
 |--------|-------------|------------|----------|------------|
-| **公共广场（用户生成图）** | user_generated_embeddings（is_public==1） | user_generated_images | GET /api/search、POST /api/search/image | **pages/search-text**、**pages/search-image**（非首页默认入口） |
-| **素材库（爬虫表情包）** | meme_embeddings | meme_assets | GET /api/meme-search、POST /api/meme-search/image、POST /api/meme-search/image/url | **首页「文本搜图」→ meme-search-text**；**首页「图搜图」→ meme-search-image** |
+| **公共广场（用户生成图）** | user_generated_embeddings（is_public==1） | user_generated_images | GET /api/search、POST /api/search/image | **pages/plaza**（公开内容浏览/筛选）；若未来需要广场向量搜再显式接入 |
+| **素材库（爬虫表情包）** | meme_embeddings | meme_assets | GET /api/meme-search、POST /api/meme-search/image、POST /api/meme-search/image/url | **pages/search**、**pages/search-text**、**pages/search-image**；首页「文本搜图」→ meme-search-text；首页「图搜图」→ meme-search-image |
 
-**首页默认搜图已纠正为素材库**：首页「文本搜图」「图搜图」分别进入 **meme-search-text**、**meme-search-image**，请求 **/api/meme-search**、**/api/meme-search/image**，数据来自 **meme_embeddings + meme_assets**。爬虫表仅 1 条时，最多返回 1 条（或 topK 条）。公共广场搜图保留为独立入口（search-text、search-image）。
+**搜索功能页已统一为素材库**：Tab「搜索」、`search-text`、`search-image` 以及首页「文本搜图」「图搜图」均请求 **/api/meme-search***，数据来自 **meme_embeddings + meme_assets**。爬虫表仅 1 条时，最多返回 1 条（或 topK 条）。公共广场仍通过 `pages/plaza` 浏览/筛选用户公开生成图。
 
 ---
 
 ## 二、整体数据流（两套）
 
-**公共广场（首页「文本搜图」「图搜图」）：**
+**公共广场（用户生成图，非搜索功能页默认数据源）：**
 
 ```
-前端 search-text / search-image
+前端明确的广场向量搜索入口（如未来新增）
   → GET /api/search 或 POST /api/search/image
   → SearchController / ImageSearchController → SearchServiceImpl
   → ai-kore POST /api/v1/vector/search-text 或 search-image/upload
@@ -32,10 +32,10 @@
 **素材库（爬虫表情包）：**
 
 ```
-前端 meme-search-text / meme-search-image
+前端 search / search-text / search-image / meme-search-text / meme-search-image
   → GET /api/meme-search 或 POST /api/meme-search/image（上传）
   → MemeSearchController → MemeSearchServiceImpl
-  → ai-kore POST /api/v1/vector/search-meme-text 或 search-meme-image/upload
+  → ai-kore POST /api/v1/vector/search-meme-text、search-meme-image/upload 或 search-image-url
   → Milvus meme_embeddings
   → 按 embedding_id 回表 meme_assets → SearchResultItem
 ```
@@ -50,59 +50,58 @@
 | 图搜上传（公共广场） | 用户生成图 | POST /api/search/image | POST /api/v1/vector/search-image/upload | user_generated_embeddings | user_generated_images |
 | 文本搜索（素材库） | 爬虫表情包 | GET /api/meme-search | POST /api/v1/vector/search-meme-text | meme_embeddings | meme_assets |
 | 图搜上传（素材库） | 爬虫表情包 | POST /api/meme-search/image | POST /api/v1/vector/search-meme-image/upload | meme_embeddings | meme_assets |
-| 图搜 URL（素材库） | 爬虫表情包 | POST /api/meme-search/image/url | POST /api/v1/vector/search-meme-image | meme_embeddings | meme_assets |
+| 图搜 URL（素材库） | 爬虫表情包 | POST /api/meme-search/image/url | POST /api/v1/vector/search-image-url | meme_embeddings | meme_assets |
 
-**首页「文本搜图」「图搜图」** 使用上表「素材库」两行（GET /api/meme-search、POST /api/meme-search/image），数据来自 **meme_assets**。
+**所有搜索功能页** 使用上表「素材库」接口（GET /api/meme-search、POST /api/meme-search/image、POST /api/meme-search/image/url），数据来自 **meme_assets**。
 
 ---
 
 ## 四、文本搜索实现逻辑（按步骤）
 
-**以下 4.1–4.3 为公共广场（首页「文本搜图」实际走的路径，数据源 user_generated_images）。**
+**以下 4.1–4.3 为搜索功能页默认路径，数据源为爬虫素材 meme_assets。**
 
-### 4.1 前端 / 客户端（公共广场）
+### 4.1 前端 / 客户端（素材库）
 
-- **pages/search-text/index**（公共广场入口，非首页默认）请求 **GET /api/search?query=关键词&topK=10**。
+- **pages/search/index**、**pages/search-text/index**、**pages/meme-search-text/index** 均通过 **services/memeSearch.js** 请求 **GET /api/meme-search?query=关键词&topK=10**。
 - 需带鉴权时 Header：`Authorization: Bearer <token>`。
 
-### 4.2 Spring Boot（公共广场）
+### 4.2 Spring Boot（素材库）
 
-1. **SearchController** 接收 `query`、`topK`，调用 **SearchService.searchByText(query, topK)**。
-2. **SearchServiceImpl.searchByText**：
-   - 调用 **POST {aiKoreBaseUrl}/api/v1/vector/search-text**（ai-kore 使用 **search_plaza_by_text**，即 **user_generated_embeddings** 且 is_public==1）。
-   - 解析 **results** 后，按 **embedding_id** 批量查 **user_generated_images**（且 generation_status=1、is_public=1），组装 **PlazaSearchResultItem**。
-3. 返回 **List\<PlazaSearchResultItem\>**，HTTP 200。
+1. **MemeSearchController** 接收 `query`、`topK`，调用 **MemeSearchService.searchByText(query, topK)**。
+2. **MemeSearchServiceImpl.searchByText**：
+   - 调用 **POST {aiKoreBaseUrl}/api/v1/vector/search-meme-text**。
+   - 解析 **results** 后，按 **embedding_id** 批量查 **meme_assets**，组装 **SearchResultItem**。
+3. 返回 **List\<SearchResultItem\>**，HTTP 200。
 
-### 4.3 ai-kore（公共广场）
+### 4.3 ai-kore（素材库）
 
-- **vector.py** 的 **search_text_api** 调用 **search_plaza_by_text** → 集合 **user_generated_embeddings**，expr=**"is_public == 1"**，返回 **(embedding_id, score)** 列表。
+- **vector.py** 的 **search_meme_text_api** 调用 **search_by_text** → 默认集合 **meme_embeddings**，返回 **(embedding_id, score)** 列表。
 
-### 4.4 素材库文本搜索（爬虫表，首页默认）
+### 4.4 公共广场文本搜索（保留能力，非搜索功能页默认）
 
-- 首页「文本搜图」→ **pages/meme-search-text**，请求 **GET /api/meme-search?query=&topK=**。
-- **MemeSearchController** → **MemeSearchServiceImpl.searchByText** → ai-kore **POST /api/v1/vector/search-meme-text** → **search_by_text** 默认集合 **meme_embeddings** → 按 **embedding_id** 回表 **meme_assets**，返回 **SearchResultItem**。
+- 若未来需要在公共广场内做向量搜索，再由明确的广场入口调用 **GET /api/search**。
+- **SearchController** → **SearchServiceImpl.searchByText** → ai-kore **POST /api/v1/vector/search-text** → **search_plaza_by_text**，集合 **user_generated_embeddings** 且 `is_public == 1`，回表 **user_generated_images**。
 
 ---
 
 ## 五、图搜图实现逻辑（按步骤）
 
-### 5.1 公共广场：上传图片
+### 5.1 素材库：上传图片
 
-- **前端**：**pages/search-image/index**（公共广场入口）→ **POST /api/search/image**，multipart **file**，query **topK=10**。
-- **Spring Boot**：**ImageSearchController.searchByImage(file, topK)** → **SearchServiceImpl.searchByImage** → **POST {aiKoreBaseUrl}/api/v1/vector/search-image/upload?top_k=topK**。
-- **ai-kore**：**search_image_upload_api** 使用 **search_plaza_by_image**，集合 **user_generated_embeddings**，expr=**"is_public == 1"**。
-- 回表 **user_generated_images**，返回 **PlazaSearchResultItem**。
-
-### 5.2 素材库：上传图片（首页「图搜图」默认）
-
-- **前端**：首页「图搜图」→ **pages/meme-search-image/index** → **POST /api/meme-search/image**，multipart **file**，query **topK=10**。
+- **前端**：**pages/search/index**、**pages/search-image/index**、**pages/meme-search-image/index** → **POST /api/meme-search/image**，multipart **file**，query **topK=10**。
 - **Spring Boot**：**MemeSearchController.searchByImage(file, topK)** → **MemeSearchServiceImpl.searchByImage** → **POST {aiKoreBaseUrl}/api/v1/vector/search-meme-image/upload?top_k=topK**。
-- **ai-kore**：**search_meme_image_upload_api** 使用 **search_by_image**，集合 **meme_embeddings**，回表 **meme_assets**。
+- **ai-kore**：**search_meme_image_upload_api** 使用 **search_by_image**，集合 **meme_embeddings**。
+- 回表 **meme_assets**，返回 **SearchResultItem**。
+
+### 5.2 公共广场：上传图片（保留能力，非搜索功能页默认）
+
+- 若未来需要在公共广场内做图搜图，再由明确的广场入口调用 **POST /api/search/image**。
+- **ImageSearchController.searchByImage(file, topK)** → **SearchServiceImpl.searchByImage** → ai-kore **search_plaza_by_image**，集合 **user_generated_embeddings** 且 `is_public == 1`，回表 **user_generated_images**。
 
 ### 5.3 素材库：图片 URL
 
-- **前端**：若使用 **POST /api/meme-search/image/url**（当前小程序未在首页提供该入口）。
-- **Spring Boot**：**MemeSearchController** → **MemeSearchServiceImpl.searchByImageUrl** → ai-kore **POST /api/v1/vector/search-meme-image**。
+- **前端**：**pages/search/index** 的 URL 模式调用 **POST /api/meme-search/image/url**。
+- **Spring Boot**：**MemeSearchController** → **MemeSearchServiceImpl.searchByImageUrl** → ai-kore **POST /api/v1/vector/search-image-url**。
 - **ai-kore**：下载 URL 图片后 **search_by_image**，集合 **meme_embeddings**，回表 **meme_assets**。
 
 ---
@@ -115,15 +114,15 @@
 | 公共广场 | 图搜(上传) | ImageSearchController.searchByImage() | SearchServiceImpl.searchByImage() | POST /api/v1/vector/search-image/upload | user_generated_images |
 | 素材库 | 文本搜 | MemeSearchController | MemeSearchServiceImpl.searchByText() | POST /api/v1/vector/search-meme-text | MemeAssetMapper → meme_assets |
 | 素材库 | 图搜(上传) | MemeSearchController.searchByImage() | MemeSearchServiceImpl.searchByImage() | POST /api/v1/vector/search-meme-image/upload | meme_assets |
-| 素材库 | 图搜(URL) | MemeSearchController | MemeSearchServiceImpl.searchByImageUrl() | POST /api/v1/vector/search-meme-image | meme_assets |
+| 素材库 | 图搜(URL) | MemeSearchController | MemeSearchServiceImpl.searchByImageUrl() | POST /api/v1/vector/search-image-url | meme_assets |
 
 - **配置**：ai-kore **MILVUS_COLLECTION_NAME**（meme_embeddings）、**MILVUS_USER_GENERATED_COLLECTION_NAME**（user_generated_embeddings）；Spring Boot **ai-kore.base-url**。
-- **首页入口**：`pages/home/index` 的「文本搜图」→ **meme-search-text**（素材库），「图搜图」→ **meme-search-image**（素材库）。公共广场搜图为 **search-text**、**search-image**，需从其它入口进入。
+- **小程序搜索入口**：`pages/search`、`pages/search-text`、`pages/search-image` 以及首页「文本搜图」→ **meme-search-text**、「图搜图」→ **meme-search-image** 均检索素材库。
 
 ---
 
 ## 七、小结
 
-- **首页「文本搜图」「图搜图」**：已纠正为走 **meme_embeddings** + **meme_assets**（素材库），首页「文本搜图」→ **meme-search-text**，首页「图搜图」→ **meme-search-image**（POST /api/meme-search/image）。
-- **公共广场搜图**：保留 **pages/search-text**、**pages/search-image**，调用 **/api/search**、**/api/search/image**，数据来自 **user_generated_embeddings** + **user_generated_images**，需从其它入口进入。
+- **所有搜索功能页**：已统一走 **meme_embeddings** + **meme_assets**（素材库），包括 Tab「搜索」、文本搜图、上传图搜、URL 图搜。
+- **公共广场**：保留用户生成图数据源与接口能力，但不再由上述搜索功能页默认调用；广场页通过 **pages/plaza** 浏览/筛选公开用户生成图。
 - 素材库图搜图支持上传（POST /api/meme-search/image）与 URL（POST /api/meme-search/image/url）。

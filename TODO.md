@@ -4,6 +4,7 @@
 
 - [x] **仓库维护（2026-05）**：根目录散落资料移至 `docs/notes`、`docs/diagrams`、`docs/assets`；`Function.md` 路径更新为 `docs/notes/Function.md`；根 `.gitignore` 补充 `node_modules`/`dist`/`target`/`.venv*`/`smart_meter/.m2`/`admin-web/.env`；删除误置于 `smart_meter/.m2` 的本地 Maven 缓存（功能不变，验证：`mvn compile`、`admin-web npm run build` 通过）。
 - [x] **OCR 切换百度通用文字识别（2026-05）**：`ai-kore` 新增 `ocr_api/baidu_general_basic.py` 独立封装百度 `general_basic` API；`ocr/engine.py` 按 `OCR_ENGINE=baidu|paddle` 分发，Paddle 历史逻辑迁移到 `ocr/paddle_ocr_legacy.py`；`.env.example`、`Cursor.md` 已补充配置说明。验证：`python -m py_compile` 与客户端解析逻辑校验通过。
+- [x] **小程序搜索数据源统一为爬虫素材（2026-05）**：`pages/search`、`pages/search-text`、`pages/search-image` 改用 `services/memeSearch.js`，统一调用 `/api/meme-search*` 检索 `meme_embeddings + meme_assets`；结果详情跳转 `pages/detail`，避免将素材库 id 误传给用户生成图详情页。
 - [x] **小程序搜索页视觉优化（2026-05）**：优化 `pages/search`、`pages/search-text`、`pages/search-image` 的头图区、输入区、上传区、结果卡片与空/加载状态，统一为浅灰背景、白色卡片、圆角阴影和 `#07c160` 浅绿色强调色；仅调整 WXML/WXSS 展示层，不改搜索接口、数据映射和详情跳转逻辑。
 - [x] **小程序首页项目描述优化（2026-05）**：优化 `pages/home` 顶部项目介绍组件，增加浅绿色渐变卡片、能力标签和核心技术摘要，仅调整 WXML/WXSS 展示层，不改首页推荐接口与跳转逻辑。
 - [x] **图片 URL 搜图完整链路（2026-05）**：补齐 ai-kore URL 图片下载 + CLIP 临时向量化 + `meme_embeddings`/`user_generated_embeddings` 检索；smart_meter 支持素材库 `/api/meme-search/image/url` 与公共广场 `/api/search/image/url` 编排回表；小程序 URL 搜图入口改为 JSON body 调用真实后端接口。

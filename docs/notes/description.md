@@ -39,7 +39,7 @@
    用户直接使用的界面，包括首页、文本搜图、图搜图、素材详情、公共广场、我的生成、个人中心、登录注册等页面。前端不直接访问向量库或 OSS，所有业务与 AI 能力均通过 Java 后端统一暴露的 API 完成。
 
 2. **Java 主业务后端（smart_meter）**  
-   使用 Spring Boot 3、Java 21、MyBatis-Plus 开发，部署在 8080 端口。职责包括：用户登录与 JWT 签发与校验、MySQL 中用户与业务数据的增删改查、接收小程序请求并转发调用 Python AI 服务、将 AI 返回的向量检索结果与 MySQL 元数据组装后返回给前端。对外提供的接口包括：登录注册、素材库搜图（/api/meme-search、/api/meme-search/image）、公共广场搜图（/api/search、/api/search/image）、素材详情与生成图详情、爬虫入库触发（/api/crawl/process-image）、个人资料头像上传（/api/user/profile/avatar）等。
+   使用 Spring Boot 3、Java 21、MyBatis-Plus 开发，部署在 8080 端口。职责包括：用户登录与 JWT 签发与校验、MySQL 中用户与业务数据的增删改查、接收小程序请求并转发调用 Python AI 服务、将 AI 返回的向量检索结果与 MySQL 元数据组装后返回给前端。对外提供的接口包括：登录注册、素材库搜图（/api/meme-search、/api/meme-search/image、/api/meme-search/image/url）、公共广场搜图（/api/search、/api/search/image）、素材详情与生成图详情、爬虫入库触发（/api/crawl/process-image）、个人资料头像上传（/api/user/profile/avatar）等。
 
 3. **Python AI 服务（ai-kore）**  
    使用 FastAPI、Uvicorn 开发，默认 8000 端口，由 uv 管理依赖。职责包括：基于 CLIP 的文本与图像向量化、Milvus 向量检索（支持多集合：素材库 meme_embeddings、用户生成 user_generated_embeddings）、爬虫管线（下载图片→上传 OSS→CLIP 向量→可选 OCR→写入 Milvus，并调用 Java 的 from-pipeline 接口写 MySQL）、视觉大模型调用（DashScope 通义千问 VL）根据图片 URL 生成 title、ocr_text、description、usage_scenario、style_tag 等元数据。图像生成（如阿里云百炼万相）也由 ai-kore 提供接口，Java 转发小程序的生成请求。

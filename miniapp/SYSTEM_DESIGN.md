@@ -113,7 +113,8 @@ miniapp/
 ## API 模块归属
 
 - `auth.js`：`/api/auth/*`
-- `search.js`：`/api/search`、`/api/search/image`、`/api/search/image/url`
+- `memeSearch.js`：`/api/meme-search`、`/api/meme-search/image`、`/api/meme-search/image/url`（搜索功能页默认使用，检索爬虫素材库）
+- `search.js`：`/api/search`、`/api/search/image`、`/api/search/image/url`（公共广场用户生成图搜索专用，勿用于素材库搜索）
 - `meme.js`：`/api/meme-assets`、`/api/meme-assets/{id}`
 
 ## 开发约束

@@ -5,9 +5,9 @@
         <text class="eyebrow">IMAGE SEARCH</text>
         <text class="title">图搜图</text>
       </view>
-      <text class="hero-badge">广场图源</text>
+      <text class="hero-badge">素材库图源</text>
     </view>
-    <text class="subtitle">选择一张图片，系统会在用户公开生成图中查找相似表情包。</text>
+    <text class="subtitle">选择一张图片，系统会在爬虫入库素材中查找相似表情包。</text>
 
     <view class="upload-panel">
       <view wx:if="{{!imagePath}}" class="choose-area" bindtap="chooseImage">
@@ -58,6 +58,8 @@
           wx:for="{{list}}"
           wx:key="id"
           data-id="{{item.id}}"
+          data-file-url="{{item.fileUrl}}"
+          data-ocr-text="{{item.ocrText}}"
           bindtap="goDetail"
         >
           <image
