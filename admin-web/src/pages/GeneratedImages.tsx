@@ -45,6 +45,7 @@ export default function GeneratedImagesPage() {
       setEditing(null)
       form.resetFields()
       await queryClient.invalidateQueries({ queryKey: ['generated-images'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
     onError: (e) => message.error(e instanceof Error ? e.message : '保存失败'),
   })
@@ -54,6 +55,7 @@ export default function GeneratedImagesPage() {
     onSuccess: async () => {
       message.success('删除成功')
       await queryClient.invalidateQueries({ queryKey: ['generated-images'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
     onError: (e) => message.error(e instanceof Error ? e.message : '删除失败'),
   })

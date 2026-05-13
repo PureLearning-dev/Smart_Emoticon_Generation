@@ -4,14 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.purelearning.smart_meter.dto.admin.AdminGeneratedImageRequest;
 import com.purelearning.smart_meter.dto.admin.AdminPlazaArticleRequest;
 import com.purelearning.smart_meter.dto.admin.AdminPlazaContentRequest;
+import com.purelearning.smart_meter.dto.admin.AdminStatsResponse;
 import com.purelearning.smart_meter.dto.admin.AdminUserRequest;
 import com.purelearning.smart_meter.entity.PlazaArticle;
 import com.purelearning.smart_meter.entity.PlazaContent;
 import com.purelearning.smart_meter.entity.User;
 import com.purelearning.smart_meter.entity.UserGeneratedImage;
+import com.purelearning.smart_meter.mapper.MemeAssetMapper;
 import com.purelearning.smart_meter.mapper.PlazaArticleMapper;
 import com.purelearning.smart_meter.mapper.PlazaContentMapper;
+import com.purelearning.smart_meter.mapper.UserFavoriteMapper;
 import com.purelearning.smart_meter.mapper.UserGeneratedImageMapper;
+import com.purelearning.smart_meter.mapper.UserMapper;
 import com.purelearning.smart_meter.service.UserService;
 import com.purelearning.smart_meter.service.enums.UserStatus;
 import com.purelearning.smart_meter.service.enums.UserType;
@@ -51,21 +55,81 @@ public class AdminController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
     private final UserGeneratedImageMapper userGeneratedImageMapper;
     private final PlazaContentMapper plazaContentMapper;
     private final PlazaArticleMapper plazaArticleMapper;
+    private final MemeAssetMapper memeAssetMapper;
+    private final UserFavoriteMapper userFavoriteMapper;
 
     public AdminController(
             UserService userService,
             PasswordEncoder passwordEncoder,
+            UserMapper userMapper,
             UserGeneratedImageMapper userGeneratedImageMapper,
             PlazaContentMapper plazaContentMapper,
-            PlazaArticleMapper plazaArticleMapper) {
+            PlazaArticleMapper plazaArticleMapper,
+            MemeAssetMapper memeAssetMapper,
+            UserFavoriteMapper userFavoriteMapper) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
         this.userGeneratedImageMapper = userGeneratedImageMapper;
         this.plazaContentMapper = plazaContentMapper;
         this.plazaArticleMapper = plazaArticleMapper;
+        this.memeAssetMapper = memeAssetMapper;
+        this.userFavoriteMapper = userFavoriteMapper;
+    }
+
+    /**
+     * 管理后台首页聚合统计。
+     * 对核心业务表做 COUNT 查询，供 React 仪表盘展示条数。
+     *
+     * @return 各模块数据总量
+     */
+    @GetMapping("/stats")
+    @Operation(summary = "管理端首页统计", description = "返回用户、生成图、广场、素材、收藏等表的记录总数。")
+    public AdminStatsResponse stats() {
+        log.info(">>> [管理] GET /api/admin/stats");
+        // MyBatis-Plus BaseMapper#selectCount 要求非 null Wrapper，使用空条件即全表 COUNT
+        long userTotal = safeCount("users", () -> userMapper.selectCount(new LambdaQueryWrapper<>()));
+        long generatedImageTotal = safeCount("user_generated_images",
+                () -> userGeneratedImageMapper.selectCount(new LambdaQueryWrapper<>()));
+        long plazaContentTotal = safeCount("plaza_contents",
+                () -> plazaContentMapper.selectCount(new LambdaQueryWrapper<>()));
+        long plazaArticleTotal = safeCount("plaza_articles",
+                () -> plazaArticleMapper.selectCount(new LambdaQueryWrapper<>()));
+        long memeAssetTotal = safeCount("meme_assets",
+                () -> memeAssetMapper.selectCount(new LambdaQueryWrapper<>()));
+        long userFavoriteTotal = safeCount("user_favorites",
+                () -> userFavoriteMapper.selectCount(new LambdaQueryWrapper<>()));
+        AdminStatsResponse resp = new AdminStatsResponse(
+                userTotal,
+                generatedImageTotal,
+                plazaContentTotal,
+                plazaArticleTotal,
+                memeAssetTotal,
+                userFavoriteTotal
+        );
+        log.info("<<< [管理] GET /api/admin/stats users={} gen={} plaza={} articles={} memes={} fav={}",
+                userTotal, generatedImageTotal, plazaContentTotal, plazaArticleTotal, memeAssetTotal, userFavoriteTotal);
+        return resp;
+    }
+
+    /**
+     * 安全执行单行统计：表不存在或 SQL 异常时返回 0，避免仪表盘整体 500。
+     *
+     * @param label   日志中的表/业务名称
+     * @param counter 返回统计行数的逻辑
+     * @return 统计值，失败时为 0
+     */
+    private long safeCount(String label, java.util.function.LongSupplier counter) {
+        try {
+            return counter.getAsLong();
+        } catch (Exception e) {
+            log.warn("[管理] 统计 {} 失败，返回 0: {}", label, e.getMessage());
+            return 0L;
+        }
     }
 
     @GetMapping("/users")

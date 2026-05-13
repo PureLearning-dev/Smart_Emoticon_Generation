@@ -6,6 +6,8 @@
 - [x] **小程序搜索页视觉优化（2026-05）**：优化 `pages/search`、`pages/search-text`、`pages/search-image` 的头图区、输入区、上传区、结果卡片与空/加载状态，统一为浅灰背景、白色卡片、圆角阴影和 `#07c160` 浅绿色强调色；仅调整 WXML/WXSS 展示层，不改搜索接口、数据映射和详情跳转逻辑。
 - [x] **小程序首页项目描述优化（2026-05）**：优化 `pages/home` 顶部项目介绍组件，增加浅绿色渐变卡片、能力标签和核心技术摘要，仅调整 WXML/WXSS 展示层，不改首页推荐接口与跳转逻辑。
 - [x] **图片 URL 搜图完整链路（2026-05）**：补齐 ai-kore URL 图片下载 + CLIP 临时向量化 + `meme_embeddings`/`user_generated_embeddings` 检索；smart_meter 支持素材库 `/api/meme-search/image/url` 与公共广场 `/api/search/image/url` 编排回表；小程序 URL 搜图入口改为 JSON body 调用真实后端接口。
+- [x] **用户收藏后端功能（2026-05）**：基于 `user_favorites` 表新增 smart_meter 收藏实体、Mapper、Service 与 `/api/favorites` 接口；支持添加收藏、取消收藏、分页查询当前用户收藏和收藏状态判断，收藏时从 `meme_assets` / `user_generated_images` 读取展示快照。
+- [x] **管理后台仪表盘与演示造数（2026-05）**：后端 `GET /api/admin/stats` 聚合各表 COUNT；admin-web 首页展示真实条数并支持刷新；新增 `SQL/seed_admin_demo.sql` 种子用户/广场/生成图/素材示例；验证说明见 `docs/ADMIN_CRUD_VERIFICATION.md`。
 
 ## 安装和配置
 

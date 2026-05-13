@@ -115,3 +115,23 @@ CREATE TABLE IF NOT EXISTS meme_assets (
   KEY idx_source_type_source_ctime (source_type, source, create_time),
   UNIQUE KEY uk_embedding_id (embedding_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表情包主数据表';
+
+-- 用户收藏表情包表
+
+CREATE TABLE IF NOT EXISTS user_favorites (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '收藏ID',
+  user_id BIGINT NOT NULL COMMENT '用户ID，对应 users.id',
+  target_type VARCHAR(32) NOT NULL COMMENT '收藏类型：MEME_ASSET / GENERATED_IMAGE',
+  target_id BIGINT NOT NULL COMMENT '收藏目标ID',
+  image_url VARCHAR(500) COMMENT '收藏图片URL快照',
+  title VARCHAR(255) COMMENT '展示标题快照',
+  usage_scenario VARCHAR(100) COMMENT '使用场景快照',
+  style_tag VARCHAR(100) COMMENT '风格标签快照',
+  source VARCHAR(64) COMMENT '来源：meme/search/plaza/generated',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '收藏时间',
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+
+  UNIQUE KEY uk_user_target (user_id, target_type, target_id),
+  KEY idx_user_ctime (user_id, create_time, id),
+  KEY idx_target (target_type, target_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户收藏表';

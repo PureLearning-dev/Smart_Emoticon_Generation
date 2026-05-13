@@ -318,7 +318,14 @@ smart_meter/                                    # Spring Boot 主业务微服务
 - **401 处理**：request.js 已统一处理，未登录时 toast 并跳转用户页。
 - **注册/登录报 Not Found（404）**：多为 8080 上跑的是旧版本后端。修改 smart_meter 中 auth 相关代码后，需在 `smart_meter` 目录执行 `mvn clean compile spring-boot:run` 重新编译并重启；并确认数据库已执行 SQL/schema.sql 或迁移脚本（users 表含 username、password_hash）。小程序 404 时会提示「接口不存在，请确认后端已重新编译并重启」；可用 GET `http://127.0.0.1:8080/api/auth/health` 确认当前后端是否包含登录/注册接口（返回 `{"ok":true,"auth":"login,register,wechat"}` 即正常）。
 
+### 管理后台 admin-web（仪表盘与造数）
+
+- 登录后首页（`/`）展示各业务表条数：后端 **`GET /api/admin/stats`**（`AdminController`），前端 `fetchAdminStats` + React Query 拉取并支持刷新。
+- 答辩/联调演示数据：执行 **`SQL/seed_admin_demo.sql`**（先核对脚本内 `USE` 库名与 `application.yaml` 一致）；种子用户默认密码见脚本注释（BCrypt 与后端 `PasswordEncoder` 一致）。
+- 各模块 CRUD 与接口核对清单：**`docs/ADMIN_CRUD_VERIFICATION.md`**；统计接口专项提示词：**`docs/PROMPT_ADMIN_DASHBOARD_STATS.md`**。
+
 ### meme_assets 表 usage_scenario 字段
+
 
 - **写入链路**：ai-kore 管线 `image_pipeline.process_single_image` → 视觉大模型（可选）得到 usage_scenario → `save_to_mysql(..., usage_scenario=...)` → smart_meter `POST /api/meme-assets/from-pipeline` → `MemeAssetServiceImpl.createFromPipeline` → MyBatis-Plus 写入 `usage_scenario` 列。
 - **若 MySQL 中 usage_scenario 仍为空**：(1) 确认表中有该列：无则执行 `SQL/migrate_meme_assets_usage_scenario.sql`；(2) 实体已用 `@TableField("usage_scenario")` 显式映射；(3) 仅**新入库**的图片会带 usage_scenario；**已存在**的 embedding_id 会直接返回不更新，故历史记录需重新跑管线（新 URL）或手动 UPDATE 补全。

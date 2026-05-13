@@ -1,6 +1,7 @@
 import { isAxiosError } from 'axios'
 import { apiClient } from '@/api/client'
 import type {
+  AdminStats,
   AdminUser,
   AdminUserPayload,
   GeneratedImage,
@@ -16,6 +17,15 @@ function shouldFallback(error: unknown): boolean {
   if (!isAxiosError(error)) return false
   const status = error.response?.status
   return status === 404 || status === 405
+}
+
+/**
+ * 管理后台首页统计：各业务表记录总数。
+ * 不对 404/405 降级为 0，避免把“旧后端未部署接口”误显示成真实数据。
+ */
+export async function fetchAdminStats(): Promise<AdminStats> {
+  const { data } = await apiClient.get<AdminStats>('/api/admin/stats')
+  return data
 }
 
 export async function fetchAdminUsers(): Promise<AdminUser[]> {

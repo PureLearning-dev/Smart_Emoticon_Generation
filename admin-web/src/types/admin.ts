@@ -78,3 +78,13 @@ export interface PlazaArticle {
 }
 
 export type PlazaArticlePayload = Omit<PlazaArticle, 'id' | 'createTime' | 'updateTime'>
+
+/** 管理后台首页聚合统计（与 GET /api/admin/stats 对齐） */
+export interface AdminStats {
+  userTotal: number
+  generatedImageTotal: number
+  plazaContentTotal: number
+  plazaArticleTotal: number
+  memeAssetTotal: number
+  userFavoriteTotal: number
+}

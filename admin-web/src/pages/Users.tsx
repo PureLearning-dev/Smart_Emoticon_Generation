@@ -29,6 +29,7 @@ export default function UsersPage() {
       setEditing(null)
       form.resetFields()
       await queryClient.invalidateQueries({ queryKey: ['users'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
     onError: (e) => message.error(e instanceof Error ? e.message : '保存失败'),
   })
@@ -38,6 +39,7 @@ export default function UsersPage() {
     onSuccess: async () => {
       message.success('删除成功')
       await queryClient.invalidateQueries({ queryKey: ['users'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
     onError: (e) => message.error(e instanceof Error ? e.message : '删除失败'),
   })
