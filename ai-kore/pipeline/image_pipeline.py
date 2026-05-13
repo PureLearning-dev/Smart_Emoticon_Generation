@@ -2,7 +2,7 @@
 单张图片处理管线
 
 职责：
-- 串联完整流程：下载 → 上传 OSS → CLIP 图像向量 → OCR（本地 PaddleOCR）→ 存入 Milvus
+- 串联完整流程：下载 → 上传 OSS → CLIP 图像向量 → OCR（默认百度 API）→ 存入 Milvus
 - 每处理完一张图片再处理下一张（串行，避免内存与并发问题）
 - 返回结构化 JSON 结果
 
@@ -10,7 +10,7 @@
 1. 从指定 URL 下载图片到本地
 2. 上传至阿里云 OSS，获取 image_url
 3. 使用 CLIP 生成图像向量
-4. OCR 识别（PaddleOCR 本地，仅支持本地图片；传入缩小后的 bytes 加速识别）
+4. OCR 识别（可选，默认百度 general_basic；`OCR_ENABLED=true` 时启用，受 `OCR_TIMEOUT_SECONDS` 限制，超时或失败写入 `OCR_DEFAULT_TEXT`）
 5. 将 image_vector + image_url + ocr_text 存入 Milvus（单向量字段，文本/图搜共用）
 6. 返回结构化 JSON
 """
@@ -24,7 +24,7 @@ from PIL import Image
 
 from crawler.spider import download_image, generate_embedding_id
 from models.clip import encode_image, get_embedding_dim
-from ocr.engine import recognize_text
+from ocr.engine import recognize_text_with_deadline
 from storage.oss_client import upload_image
 from vector.client import connect, ensure_collection
 from vector.collection import exists_by_embedding_id, insert_one
@@ -40,12 +40,24 @@ except ImportError:
     get_metadata_from_image_url = None
 
 try:
-    from app.core.config import MILVUS_COLLECTION_NAME, OCR_MAX_DIMENSION
+    from app.core.config import (
+        MILVUS_COLLECTION_NAME,
+        OCR_DEFAULT_TEXT,
+        OCR_ENABLED,
+        OCR_MAX_DIMENSION,
+        OCR_TIMEOUT_SECONDS,
+    )
     from app.core.logger import get_logger
 except ImportError:
     import os
     MILVUS_COLLECTION_NAME = os.getenv("MILVUS_COLLECTION_NAME", "meme_embeddings")
     OCR_MAX_DIMENSION = int(os.getenv("OCR_MAX_DIMENSION", "1024"))
+    OCR_ENABLED = os.getenv("OCR_ENABLED", "false").lower() in ("true", "1", "yes")
+    try:
+        OCR_TIMEOUT_SECONDS = float(os.getenv("OCR_TIMEOUT_SECONDS", "45"))
+    except ValueError:
+        OCR_TIMEOUT_SECONDS = 45.0
+    OCR_DEFAULT_TEXT = os.getenv("OCR_DEFAULT_TEXT", "")
 
     def get_logger(name: str):
         import logging
@@ -142,10 +154,28 @@ def process_single_image(
         image_vector = encode_image(temp_path)
         result["image_vector_dim"] = len(image_vector)
 
-        # 4. OCR 识别（本机开发环境完全禁用，避免 PaddleOCR 在 Apple Silicon 上挂掉）
-        logger.info("OCR 暂时禁用，跳过本地 PaddleOCR 识别，使用空文本")
-        ocr_text = ""
-        result["ocr_text"] = ocr_text
+        # 4. OCR（可选）：未启用时保持空串；启用时在超时内识别，超时或引擎异常使用 OCR_DEFAULT_TEXT
+        if OCR_ENABLED:
+            logger.info(
+                "执行 OCR（超时 %.1fs，默认文案长度=%d）",
+                OCR_TIMEOUT_SECONDS,
+                len(OCR_DEFAULT_TEXT or ""),
+            )
+            try:
+                ocr_bytes = _resize_for_ocr(data, OCR_MAX_DIMENSION)
+                ocr_text = recognize_text_with_deadline(
+                    ocr_bytes,
+                    timeout_seconds=OCR_TIMEOUT_SECONDS,
+                    default_text=OCR_DEFAULT_TEXT,
+                )
+            except Exception as e:  # noqa: BLE001 — 缩放等前置步骤失败时仍落库默认值
+                logger.warning("OCR 步骤异常，使用 OCR_DEFAULT_TEXT: %s", e)
+                ocr_text = OCR_DEFAULT_TEXT
+            result["ocr_text"] = ocr_text
+        else:
+            logger.info("OCR 未启用（OCR_ENABLED=false），跳过 OCR")
+            ocr_text = ""
+            result["ocr_text"] = ocr_text
 
         # 5. 存入 Milvus（同一 URL 已存在则跳过，避免主键冲突）
         # 注：Milvus 单向量字段，存 image_vector；文本/图搜均在此字段检索（CLIP 语义空间对齐）

@@ -4,7 +4,7 @@
 职责：
 - 创建 FastAPI 实例
 - 注册路由（含 /api/v1/crawl 图片处理管线）
-- 启动时预加载 PaddleOCR，避免首次请求延迟
+- 启动时按需初始化 OCR（百度 API 无需预加载，Paddle 模式才加载模型）
 - 启动 uvicorn
 """
 
@@ -17,10 +17,13 @@ from app.api.router import api_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期：启动时预加载 PaddleOCR 单例，关闭时无需释放"""
-    from ocr.engine import init_ocr
+    """应用生命周期：启用 OCR 时初始化所选引擎，未使用时不加载本地模型"""
+    from app.core.config import OCR_ENABLED
 
-    init_ocr()  # 预加载，后续 recognize_text 直接复用
+    if OCR_ENABLED:
+        from ocr.engine import init_ocr
+
+        init_ocr()
     yield
     # 关闭时无需显式释放，进程退出自动清理
 

@@ -30,6 +30,14 @@ def _get_int(key: str, default: int = 0) -> int:
         return default
 
 
+def _get_float(key: str, default: float) -> float:
+    """从环境变量读取浮点数"""
+    try:
+        return float(_get(key, str(default)))
+    except ValueError:
+        return default
+
+
 # ======================== 阿里云 OSS 配置 ========================
 OSS_ACCESS_KEY_ID = _get("OSS_ACCESS_KEY_ID")
 OSS_ACCESS_KEY_SECRET = _get("OSS_ACCESS_KEY_SECRET")
@@ -51,11 +59,24 @@ CLIP_PRETRAINED = _get("CLIP_PRETRAINED", "openai")  # openai / laion2b 等
 CLIP_DEVICE = _get("CLIP_DEVICE", "cpu")  # cpu / cuda
 
 # ======================== OCR 配置 ========================
-# PaddleOCR 本地识别，仅支持本地图片（Path/bytes），不支持 URL
+# 引擎：baidu = 百度通用文字识别 general_basic；paddle = 本地 PaddleOCR 历史实现
+OCR_ENGINE = _get("OCR_ENGINE", "baidu").lower()
+# 百度 OCR 密钥：仅从环境变量读取，禁止写入代码
+BAIDU_OCR_APP_ID = _get("BAIDU_OCR_APP_ID")
+BAIDU_OCR_API_KEY = _get("BAIDU_OCR_API_KEY")
+BAIDU_OCR_SECRET_KEY = _get("BAIDU_OCR_SECRET_KEY")
+BAIDU_OCR_LANGUAGE_TYPE = _get("BAIDU_OCR_LANGUAGE_TYPE", "CHN_ENG")
+# PaddleOCR 本地识别参数，仅 OCR_ENGINE=paddle 时生效
 OCR_USE_ANGLE_CLS = _get("OCR_USE_ANGLE_CLS", "true").lower() in ("true", "1", "yes")
 OCR_LANG = _get("OCR_LANG", "ch")  # ch / en
-# OCR 前图片最长边上限（像素），超过则等比缩小，加速 Mac CPU 识别；1024 兼顾速度与识别率
+# OCR 前图片最长边上限（像素），超过则等比缩小，降低本地识别耗时与百度上传体积
 OCR_MAX_DIMENSION = _get_int("OCR_MAX_DIMENSION", 1024)
+# 是否在爬虫入库管线中执行 OCR
+OCR_ENABLED = _get("OCR_ENABLED", "false").lower() in ("true", "1", "yes")
+# 单次 OCR 最长等待秒数；超时或引擎异常时 ocr_text 使用 OCR_DEFAULT_TEXT（<=0 表示不限制等待时间）
+OCR_TIMEOUT_SECONDS = _get_float("OCR_TIMEOUT_SECONDS", 45.0)
+# OCR 超时或识别失败时写入的默认文案（可为空字符串）
+OCR_DEFAULT_TEXT = _get("OCR_DEFAULT_TEXT", "")
 
 # ======================== smart_meter 配置 ========================
 # 主业务服务地址，用于管线完成后写入 meme_assets 元数据
@@ -96,13 +117,5 @@ STYLE_TAG_LIST = _get(
 # 视觉大模型（图片 URL → 元数据，爬虫入库管线）；复用 BAILIAN_API_KEY
 DASHSCOPE_VL_BASE_URL = _get("DASHSCOPE_VL_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")
 DASHSCOPE_VL_MODEL = _get("DASHSCOPE_VL_MODEL", "qwen-vl-plus")
-
-
-def _get_float(key: str, default: float = 0.0) -> float:
-    try:
-        return float(_get(key, str(default)))
-    except ValueError:
-        return default
-
 
 DASHSCOPE_VL_TIMEOUT = _get_float("DASHSCOPE_VL_TIMEOUT", 30.0)
