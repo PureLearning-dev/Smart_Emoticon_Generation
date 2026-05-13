@@ -32,8 +32,11 @@ mybatis-plus:
       id-type: auto
 
 # Python AI 服务地址（用于联调）
+# read-timeout-ms：调用 ai-kore 离线入库 / 搜图等 HTTP 读超时；爬虫管线含下载、OSS、CLIP、PaddleOCR，首次 OCR 可能数分钟，过短易出现 Unexpected end of file from server
 ai-kore:
   base-url: http://127.0.0.1:8000
+  connect-timeout-ms: 15000
+  read-timeout-ms: 600000
 
 # 微信小程序登录（jscode2session）
 wechat:

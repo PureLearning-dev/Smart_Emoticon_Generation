@@ -2,10 +2,12 @@ package com.purelearning.smart_meter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.purelearning.smart_meter.dto.admin.AdminGeneratedImageRequest;
+import com.purelearning.smart_meter.dto.admin.AdminMemeAssetRequest;
 import com.purelearning.smart_meter.dto.admin.AdminPlazaArticleRequest;
 import com.purelearning.smart_meter.dto.admin.AdminPlazaContentRequest;
 import com.purelearning.smart_meter.dto.admin.AdminStatsResponse;
 import com.purelearning.smart_meter.dto.admin.AdminUserRequest;
+import com.purelearning.smart_meter.entity.MemeAsset;
 import com.purelearning.smart_meter.entity.PlazaArticle;
 import com.purelearning.smart_meter.entity.PlazaContent;
 import com.purelearning.smart_meter.entity.User;
@@ -335,6 +337,66 @@ public class AdminController {
         return plazaArticleMapper.deleteById(id) > 0;
     }
 
+    @GetMapping("/meme-assets")
+    @Operation(summary = "管理端爬虫素材列表", description = "返回 meme_assets 全量列表，按创建时间、id 倒序。")
+    public List<MemeAsset> listMemeAssets() {
+        log.info(">>> [管理] GET /api/admin/meme-assets");
+        List<MemeAsset> list = memeAssetMapper.selectList(new LambdaQueryWrapper<MemeAsset>()
+                .orderByDesc(MemeAsset::getCreateTime)
+                .orderByDesc(MemeAsset::getId));
+        log.info("<<< [管理] GET /api/admin/meme-assets count={}", list.size());
+        return list;
+    }
+
+    @PostMapping("/meme-assets")
+    @Operation(summary = "管理端新增爬虫素材", description = "写入 meme_assets；fileUrl 必填；embedding_id 若填写则须唯一。")
+    public MemeAsset createMemeAsset(@RequestBody AdminMemeAssetRequest request) {
+        MemeAsset entity = toMemeAsset(request, true);
+        if (StringUtils.hasText(entity.getEmbeddingId())) {
+            Long cnt = memeAssetMapper.selectCount(new LambdaQueryWrapper<MemeAsset>()
+                    .eq(MemeAsset::getEmbeddingId, entity.getEmbeddingId()));
+            if (cnt != null && cnt > 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "embeddingId 已存在");
+            }
+        }
+        memeAssetMapper.insert(entity);
+        log.info("<<< [管理] POST /api/admin/meme-assets id={}", entity.getId());
+        return memeAssetMapper.selectById(entity.getId());
+    }
+
+    @PutMapping("/meme-assets/{id}")
+    @Operation(summary = "管理端更新爬虫素材", description = "更新 meme_assets。")
+    public MemeAsset updateMemeAsset(@PathVariable Long id, @RequestBody AdminMemeAssetRequest request) {
+        assertPositiveId(id);
+        MemeAsset current = memeAssetMapper.selectById(id);
+        if (current == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "爬虫素材不存在");
+        }
+        MemeAsset entity = toMemeAsset(request, false);
+        entity.setId(id);
+        if (StringUtils.hasText(entity.getEmbeddingId())
+                && !entity.getEmbeddingId().equals(current.getEmbeddingId())) {
+            Long cnt = memeAssetMapper.selectCount(new LambdaQueryWrapper<MemeAsset>()
+                    .eq(MemeAsset::getEmbeddingId, entity.getEmbeddingId())
+                    .ne(MemeAsset::getId, id));
+            if (cnt != null && cnt > 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "embeddingId 已被其他记录使用");
+            }
+        }
+        memeAssetMapper.updateById(entity);
+        log.info("<<< [管理] PUT /api/admin/meme-assets/{} ok=true", id);
+        return memeAssetMapper.selectById(id);
+    }
+
+    @DeleteMapping("/meme-assets/{id}")
+    @Operation(summary = "管理端删除爬虫素材", description = "根据 meme_assets.id 删除。")
+    public boolean deleteMemeAsset(@PathVariable Long id) {
+        assertPositiveId(id);
+        boolean ok = memeAssetMapper.deleteById(id) > 0;
+        log.info("<<< [管理] DELETE /api/admin/meme-assets/{} ok={}", id, ok);
+        return ok;
+    }
+
     private static void assertPositiveId(Long id) {
         if (id == null || id <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id 必须为正整数");
@@ -393,6 +455,30 @@ public class AdminController {
         entity.setSortOrder(request.sortOrder() != null ? request.sortOrder() : (forCreate ? 0 : null));
         entity.setStatus(request.status() != null ? request.status() : (forCreate ? 1 : null));
         entity.setCreateUserId(request.createUserId());
+        return entity;
+    }
+
+    private static MemeAsset toMemeAsset(AdminMemeAssetRequest request, boolean forCreate) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "请求体不能为空");
+        }
+        if (forCreate && !StringUtils.hasText(request.fileUrl())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fileUrl 不能为空");
+        }
+        MemeAsset entity = new MemeAsset();
+        entity.setTitle(blankToNull(request.title()));
+        entity.setFileUrl(blankToNull(request.fileUrl()));
+        entity.setThumbnailUrl(blankToNull(request.thumbnailUrl()));
+        entity.setOcrText(blankToNull(request.ocrText()));
+        entity.setDescription(blankToNull(request.description()));
+        entity.setContentText(blankToNull(request.contentText()));
+        entity.setStyleTag(blankToNull(request.styleTag()));
+        entity.setUsageScenario(blankToNull(request.usageScenario()));
+        entity.setSourceType(request.sourceType() != null ? request.sourceType() : (forCreate ? 1 : null));
+        entity.setSource(blankToNull(request.source()));
+        entity.setEmbeddingId(blankToNull(request.embeddingId()));
+        entity.setStatus(request.status() != null ? request.status() : (forCreate ? 1 : null));
+        entity.setIsPublic(request.isPublic() != null ? request.isPublic() : (forCreate ? 1 : null));
         return entity;
     }
 

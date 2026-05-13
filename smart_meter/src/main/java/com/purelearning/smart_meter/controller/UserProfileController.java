@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 用户个人资料相关接口。
@@ -49,11 +51,11 @@ public class UserProfileController {
     @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传头像", description = "上传头像图片并更新当前登录用户的头像 URL。")
     public ResponseEntity<AvatarUpdateResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        Long userId = SecurityUtils.requireCurrentUserId();
+        Long userId = requireCurrentUserIdForAvatar();
         log.info(">>> [接口] POST /api/user/profile/avatar userId={} size={}", userId, file != null ? file.getSize() : 0);
 
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("头像文件不能为空");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "头像文件不能为空");
         }
 
         // 复用 ai-kore 上传参考图能力，获取 OSS 公网 URL
@@ -61,13 +63,26 @@ public class UserProfileController {
 
         User user = userService.getById(userId);
         if (user == null) {
-            throw new IllegalStateException("当前用户不存在，无法更新头像");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "当前用户不存在，无法更新头像");
         }
         user.setAvatarUrl(avatarUrl);
         userService.updateById(user);
         log.info("<<< [接口] POST /api/user/profile/avatar userId={} avatarUrl={}", userId, avatarUrl);
 
         return ResponseEntity.ok(new AvatarUpdateResponse(avatarUrl));
+    }
+
+    /**
+     * 头像上传必须依赖 JWT 中的当前用户；没有 token 或 token 无效时明确返回 401。
+     *
+     * @return 当前登录用户 ID
+     */
+    private static Long requireCurrentUserIdForAvatar() {
+        try {
+            return SecurityUtils.requireCurrentUserId();
+        } catch (IllegalStateException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "请先登录后再设置头像", e);
+        }
     }
 }
 

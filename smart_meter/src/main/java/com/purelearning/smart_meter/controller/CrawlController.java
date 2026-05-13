@@ -70,7 +70,9 @@ public class CrawlController {
                     "status", BAD_GATEWAY.value(),
                     "error", "调用 ai-kore 爬虫管线失败",
                     "message", e.getMessage(),
-                    "hint", "请确认 ai-kore 已启动且 /api/v1/crawl/process-image 接口可用"
+                    "hint", "请确认 ai-kore 已启动（默认 8000）；读超时见 application.yaml ai-kore.read-timeout-ms。"
+                            + "若报错含 Unexpected end of file：多为 ai-kore 处理中断（查看 Python 控制台/日志），"
+                            + "常见原因含 PaddleOCR 崩溃——可暂时将 ai-kore/.env 中 OCR_ENABLED=false 后重启 ai-kore 再试。"
             );
         } catch (Exception e) {
             log.warn("图片离线管线处理异常", e);
