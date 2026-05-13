@@ -22,3 +22,6 @@ smart_meter/.m2/
 
 # Admin local env (keep .env.example)
 admin-web/.env
+
+# Local runtime logs (do not commit)
+logs/
