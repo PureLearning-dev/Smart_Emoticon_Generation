@@ -3,11 +3,16 @@
 根目录
 
 - [x] **仓库维护（2026-05）**：根目录散落资料移至 `docs/notes`、`docs/diagrams`、`docs/assets`；`Function.md` 路径更新为 `docs/notes/Function.md`；根 `.gitignore` 补充 `node_modules`/`dist`/`target`/`.venv*`/`smart_meter/.m2`/`admin-web/.env`；删除误置于 `smart_meter/.m2` 的本地 Maven 缓存（功能不变，验证：`mvn compile`、`admin-web npm run build` 通过）。
+- [x] **OCR 切换百度通用文字识别（2026-05）**：`ai-kore` 新增 `ocr_api/baidu_general_basic.py` 独立封装百度 `general_basic` API；`ocr/engine.py` 按 `OCR_ENGINE=baidu|paddle` 分发，Paddle 历史逻辑迁移到 `ocr/paddle_ocr_legacy.py`；`.env.example`、`Cursor.md` 已补充配置说明。验证：`python -m py_compile` 与客户端解析逻辑校验通过。
 - [x] **小程序搜索页视觉优化（2026-05）**：优化 `pages/search`、`pages/search-text`、`pages/search-image` 的头图区、输入区、上传区、结果卡片与空/加载状态，统一为浅灰背景、白色卡片、圆角阴影和 `#07c160` 浅绿色强调色；仅调整 WXML/WXSS 展示层，不改搜索接口、数据映射和详情跳转逻辑。
 - [x] **小程序首页项目描述优化（2026-05）**：优化 `pages/home` 顶部项目介绍组件，增加浅绿色渐变卡片、能力标签和核心技术摘要，仅调整 WXML/WXSS 展示层，不改首页推荐接口与跳转逻辑。
 - [x] **图片 URL 搜图完整链路（2026-05）**：补齐 ai-kore URL 图片下载 + CLIP 临时向量化 + `meme_embeddings`/`user_generated_embeddings` 检索；smart_meter 支持素材库 `/api/meme-search/image/url` 与公共广场 `/api/search/image/url` 编排回表；小程序 URL 搜图入口改为 JSON body 调用真实后端接口。
 - [x] **用户收藏后端功能（2026-05）**：基于 `user_favorites` 表新增 smart_meter 收藏实体、Mapper、Service 与 `/api/favorites` 接口；支持添加收藏、取消收藏、分页查询当前用户收藏和收藏状态判断，收藏时从 `meme_assets` / `user_generated_images` 读取展示快照。
 - [x] **管理后台仪表盘与演示造数（2026-05）**：后端 `GET /api/admin/stats` 聚合各表 COUNT；admin-web 首页展示真实条数并支持刷新；新增 `SQL/seed_admin_demo.sql` 种子用户/广场/生成图/素材示例；验证说明见 `docs/ADMIN_CRUD_VERIFICATION.md`。
+- [x] **小程序头像上传登录态修复（2026-05）**：用户中心更换头像时实时读取 token，避免页面缓存状态滞后导致已登录仍提示先登录；`uploadFile` 遇到 401 时统一清理登录态并提示重新登录；后端 `/api/user/profile/avatar` 对未登录/无效 token 明确返回 401。验证：IDE lint 无新增错误，`./mvnw -q -DskipTests compile` 通过；`./mvnw -q test` 受既有 WebMvcTest 缺少 MyBatis `sqlSessionFactory` 影响未通过。
+- [x] **OCR 超时与默认值（2026-05）**：`ai-kore` 增加 `OCR_ENABLED`、`OCR_TIMEOUT_SECONDS`、`OCR_DEFAULT_TEXT`；`ocr.engine.recognize_text_with_deadline` 在线程池中限时等待 PaddleOCR，超时或异常返回默认文案；`image_pipeline` 在启用 OCR 时使用该逻辑；`OCR_ENABLED=false` 时仍跳过 OCR 且不预加载模型。验证：配置项见 `ai-kore/.env.example`；`python -m py_compile` 相关模块通过。
+- [x] **管理后台爬取素材 CRUD（2026-05）**：`smart_meter` 新增 `GET/POST/PUT/DELETE /api/admin/meme-assets`，请求体 `AdminMemeAssetRequest`；`admin-web` 侧边栏「爬取素材」、路由 `/crawled-assets`、页面 `MemeAssets.tsx` 表格展示 `meme_assets` 并支持增删改；删除仅删 MySQL，不含 Milvus 清理。验证：`./mvnw -DskipTests compile`、`admin-web npm run build` 通过。
+- [x] **ai-kore 爬虫调用读超时（2026-05）**：`RestTemplate` 使用 `SimpleClientHttpRequestFactory`，`application.yaml` 增加 `ai-kore.connect-timeout-ms`、`ai-kore.read-timeout-ms`（默认 10 分钟），避免离线入库耗时过长时出现 `Unexpected end of file`；`CrawlController` 错误 hint 补充 OCR 崩溃排查。验证：`./mvnw -DskipTests compile`。
 
 ## 安装和配置
 
