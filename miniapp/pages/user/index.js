@@ -3,6 +3,7 @@
  * 职责：头像与昵称、登录/退出、头像上传、功能列表（我的生成、清除缓存、免责声明、我的收藏、关于我们、帮助）
  */
 const { getUserState, setUserState, clearUserState } = require("../../store/user");
+const { getToken } = require("../../utils/auth");
 const { uploadAvatar } = require("../../services/user");
 
 Page({
@@ -30,9 +31,15 @@ Page({
    * 更换头像：选择图片并上传到后端，成功后更新本地用户信息。
    */
   changeAvatar() {
-    if (!this.data.token) {
+    // 头像上传依赖 JWT 鉴权，点击时实时读取 token，避免页面缓存状态滞后。
+    const token = getToken();
+    if (!token) {
       wx.showToast({ title: "请先登录后再设置头像", icon: "none" });
+      this.refreshUserState();
       return;
+    }
+    if (token !== this.data.token) {
+      this.refreshUserState();
     }
     wx.chooseMedia({
       count: 1,
@@ -53,11 +60,12 @@ Page({
           const state = getUserState();
           const user = state.user || {};
           const updatedUser = Object.assign({}, user, { avatarUrl });
-          setUserState(state.token || "", updatedUser);
-          this.setData({ user: updatedUser });
+          setUserState(state.token || token, updatedUser);
+          this.setData({ token: state.token || token, user: updatedUser });
           wx.showToast({ title: "头像已更新", icon: "success" });
         } catch (e) {
           // 具体错误提示已在 request.upload 中统一处理
+          this.refreshUserState();
         } finally {
           wx.hideLoading();
         }

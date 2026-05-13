@@ -6,6 +6,28 @@ const ENV = require("../config/env");
 const { getToken, clearAuth } = require("../utils/auth");
 
 /**
+ * 解析后端错误体中的可读文案。
+ * @param {object|string} raw 响应体
+ * @param {string} fallback 兜底文案
+ * @returns {string} toast 与 Error 使用的错误文案
+ */
+function pickErrorMessage(raw, fallback) {
+  let data = raw;
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data || "{}");
+    } catch (_) {
+      return data || fallback;
+    }
+  }
+  if (!data || typeof data !== "object") return fallback;
+  if (Array.isArray(data.detail)) {
+    return (data.detail[0] && data.detail[0].msg) ? data.detail[0].msg : fallback;
+  }
+  return data.detail || data.error || data.message || fallback;
+}
+
+/**
  * 发起通用 HTTP 请求
  * @param {object} options 请求参数
  * @returns {Promise<any>}
@@ -49,7 +71,7 @@ function request(options) {
 
         if (status === 401) {
           clearAuth();
-          const msg = res.data && res.data.error ? res.data.error : "登录已失效，请重新登录";
+          const msg = pickErrorMessage(res.data, "登录已失效，请重新登录");
           wx.showToast({ title: msg, icon: "none" });
           const err = new Error(msg);
           err.response = res;
@@ -65,8 +87,7 @@ function request(options) {
         }
 
         const message =
-          (res.data && (res.data.error || res.data.message || (typeof res.data.detail === "string" ? res.data.detail : null)))
-          || "请求失败";
+          pickErrorMessage(res.data, "请求失败");
         wx.showToast({ title: message, icon: "none" });
         const err = new Error(message);
         err.response = res;
@@ -113,14 +134,14 @@ function upload(url, filePath, formData) {
           resolve(data);
           return;
         }
-        let msg = "上传失败";
-        try {
-          const data = typeof res.data === "string" ? JSON.parse(res.data || "{}") : (res.data || {});
-          msg = data.detail || data.error || data.message || msg;
-          if (Array.isArray(data.detail)) {
-            msg = (data.detail[0] && data.detail[0].msg) ? data.detail[0].msg : msg;
-          }
-        } catch (_) {}
+        // uploadFile 也必须按 JWT 失效处理，否则头像上传会误判为“已登录但不能设置”。
+        if (res.statusCode === 401) {
+          clearAuth();
+        }
+        const msg = pickErrorMessage(
+          res.data,
+          res.statusCode === 401 ? "登录已失效，请重新登录" : "上传失败"
+        );
         wx.showToast({ title: msg, icon: "none" });
         const err = new Error(msg);
         err.response = res;
