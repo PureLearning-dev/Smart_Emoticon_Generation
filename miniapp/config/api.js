@@ -40,5 +40,9 @@ module.exports = {
     text: "/api/meme-search",
     imageUpload: "/api/meme-search/image",
     imageUrl: "/api/meme-search/image/url"
+  },
+  favorites: {
+    base: "/api/favorites",
+    status: "/api/favorites/status"
   }
 };
