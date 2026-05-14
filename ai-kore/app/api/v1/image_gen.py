@@ -23,6 +23,7 @@ BAILIAN_DOWNLOAD_TIMEOUT = 30.0
 BAILIAN_LLM_TIMEOUT = 30.0
 
 from app.schemas.image_gen_schema import ImageGenerateRequest, ImageGenerateResponse
+from app.core.style_tag_defaults import STYLE_TAG_LIST_DEFAULT
 from storage.oss_client import upload_image
 
 router = APIRouter(prefix="/image", tags=["生成图片"])
@@ -238,10 +239,7 @@ def _generate_usage_scenario_and_style_tag(prompt: str, image_url: str) -> tuple
             "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
         )
         BAILIAN_LLM_MODEL = os.getenv("BAILIAN_LLM_MODEL", "qwen-turbo")
-        STYLE_TAG_LIST = os.getenv(
-            "STYLE_TAG_LIST",
-            "搞笑,治愈,职场,情侣,朋友,节日,日常,萌系,复古,简约,毒鸡汤,励志",
-        )
+        STYLE_TAG_LIST = os.getenv("STYLE_TAG_LIST", STYLE_TAG_LIST_DEFAULT)
 
     if not (BAILIAN_API_KEY and str(BAILIAN_API_KEY).strip()):
         raise ValueError("未配置 BAILIAN_API_KEY")
@@ -256,6 +254,8 @@ def _generate_usage_scenario_and_style_tag(prompt: str, image_url: str) -> tuple
 第一行：使用场景描述（usage_scenario）。要求：平易近人、具体说明这张图适合在什么场合用，例如「适合发朋友圈、和同事吐槽加班」「适合和闺蜜斗图、表达不想上班」等。长度控制在 50 字以内，不要用过于书面或官方的语气。
 
 第二行：风格标签（style_tag）。你必须且只能从以下标签中选取 1 个，或至多 2 个（多个时用英文逗号分隔）：{style_tag_list_str}。不要使用列表之外的任何词。
+
+style_tag 判别要点（与爬虫入库视觉模型口径一致）：若提示词或画面强相关「上班/领导/同事/加班」优先「职场」；恋爱相关优先「情侣」；损友哥们优先「朋友」；节庆优先「节日」。情绪类：明显发泄怒气选「生气」，不要与「搞笑」混淆——只有整体轻松玩梗逗乐才选「搞笑」；抱怨讽刺选「吐槽」；无奈选「无语」或「敷衍」；反讽选「阴阳怪气」；惊呆选「震惊」；尴尬选「社死」；卖萌选「撒娇」；赞同选「认同」。画风调性：治愈/励志/毒鸡汤/萌系/复古/简约按画面气质选；难归类用「日常」。
 
 输出格式严格为两行，第一行是使用场景，第二行是风格标签。不要输出「第一行」「第二行」等字样，不要输出编号或 Markdown。"""
 

@@ -12,6 +12,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from app.core.style_tag_defaults import STYLE_TAG_LIST_DEFAULT
+
 # 加载项目根目录下的 .env 文件
 _env_path = Path(__file__).resolve().parents[2] / ".env"
 load_dotenv(_env_path)
@@ -108,11 +110,8 @@ BAILIAN_LLM_BASE_URL = _get(
     "BAILIAN_LLM_BASE_URL",
     "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
 )
-# style_tag 固定枚举，逗号分隔；大模型只能从该列表中选取
-STYLE_TAG_LIST = _get(
-    "STYLE_TAG_LIST",
-    "搞笑,治愈,职场,情侣,朋友,节日,日常,萌系,复古,简约,毒鸡汤,励志",
-)
+# style_tag 固定枚举，逗号分隔；大模型只能从该列表中选取（默认见 style_tag_defaults）
+STYLE_TAG_LIST = _get("STYLE_TAG_LIST", STYLE_TAG_LIST_DEFAULT)
 
 # 视觉大模型（图片 URL → 元数据，爬虫入库管线）；复用 BAILIAN_API_KEY
 DASHSCOPE_VL_BASE_URL = _get("DASHSCOPE_VL_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")

@@ -4,6 +4,7 @@
 职责：
 - 调用阿里云 DashScope 通义千问 VL（OpenAI 兼容接口），传入图片 URL + 提示词
 - 解析模型返回的 JSON，得到结构化元数据，供管线写入 meme_assets
+- style_tag 合法值与 app.core.config.STYLE_TAG_LIST（默认见 style_tag_defaults）一致，提示词内含场景/情绪判别细则
 
 依赖：BAILIAN_API_KEY（即 DashScope API Key）；可选 DASHSCOPE_VL_BASE_URL、DASHSCOPE_VL_MODEL
 """
@@ -15,11 +16,54 @@ from typing import Any, Dict, Optional
 import httpx
 
 try:
+    from app.core.style_tag_defaults import STYLE_TAG_LIST_DEFAULT
+except ImportError:
+    # 与 app.core.style_tag_defaults 保持同步，供无 app 包路径时的独立脚本降级
+    STYLE_TAG_LIST_DEFAULT = (
+        "搞笑,生气,吐槽,无语,震惊,敷衍,认同,阴阳怪气,撒娇,社死,"
+        "治愈,励志,毒鸡汤,萌系,复古,简约,职场,情侣,朋友,节日,日常"
+    )
+
+
+def _parse_style_tag_csv(raw: str) -> frozenset[str]:
+    """将逗号分隔的 style_tag 列表解析为不可变集合；空串时回落为仅含「日常」。"""
+    s = frozenset(t.strip() for t in (raw or "").split(",") if t.strip())
+    return s if s else frozenset({"日常"})
+
+
+def _build_vl_user_prompt(style_tag_enum: frozenset[str]) -> str:
+    """
+    构造通义千问 VL 的用户提示词：固定 JSON 输出 + 与配置一致的 style_tag 枚举 + 判别细则。
+
+    Args:
+        style_tag_enum: 允许输出的 style_tag 集合（与 STYLE_TAG_LIST 解析结果一致）
+    """
+    tags_inline = "、".join(sorted(style_tag_enum))
+    return f"""请根据这张表情包图片，严格按以下 JSON 格式输出一行，不要换行、不要 Markdown、不要其它说明：
+{{"title":"简短标题","ocr_text":"图中全部文字","description":"一句话语义描述","usage_scenario":"使用场景描述","style_tag":"风格标签"}}
+
+字段要求：
+- title：不超过 30 字，概括图片主题或图中核心文字。
+- ocr_text：图中出现的全部可读文字，没有则填 ""。
+- description：一句话说明画面情绪、角色关系或梗的含义。
+- usage_scenario：70 字以内，用口语说明这张图适合在哪些聊天/社交场景使用。
+- style_tag：下列标签中**恰好选一个**，输出必须与列表用字完全一致（不要自造近义词）：{tags_inline}
+
+style_tag 判别规则（请先在脑中过一遍再选定，避免情绪与「搞笑」相反）：
+① **强场景优先**：画面或文案明确围绕上班、领导、同事、加班、工资、会议、摸鱼 →「职场」；恋爱、约会、分手、吃醋、对象为叙事中心 →「情侣」；兄弟、闺蜜、损友、干杯、死党叙事 →「朋友」；春节、中秋、圣诞等节庆氛围突出 →「节日」。强场景成立时优先选场景类。
+② **情绪与态度**（场景不突出时）：人物或文案呈现**愤怒、辱骂、暴走、「气炸」「滚」类发泄** →「生气」；**整体基调是轻松玩梗、魔性幽默、令人发笑且无强烈负面攻击** →「搞笑」。务必区分：单纯发泄怒气**不要**标成搞笑；尖刻抱怨、讽刺生活但未必暴怒 →「吐槽」。无奈翻白眼、不想搭理 →「无语」。糊弄、随便敷衍、摆烂 OK →「敷衍」。赞同、鼓掌、「确实」「牛」→「认同」。明褒暗贬、反讽绕弯 →「阴阳怪气」。卖萌装可怜求关注 →「撒娇」。尴尬、公开处刑、脚趾抠地 →「社死」。夸张惊掉下巴 →「震惊」。
+③ **画风与调性**：温暖柔和正能量 →「治愈」；打鸡血鸡汤 →「励志」；黑色幽默人生歪理 →「毒鸡汤」；可爱软萌 Q 版 →「萌系」；复古像素/怀旧画风 →「复古」；极简大字、元素极少 →「简约」。
+④ 以上都不贴切时选「日常」。
+⑤ 禁止输出多个标签；禁止英文标签；禁止列表外任意词。"""
+
+
+try:
     from app.core.config import (
         BAILIAN_API_KEY,
         DASHSCOPE_VL_BASE_URL,
         DASHSCOPE_VL_MODEL,
         DASHSCOPE_VL_TIMEOUT,
+        STYLE_TAG_LIST,
     )
     from app.core.logger import get_logger
 except ImportError:
@@ -30,6 +74,7 @@ except ImportError:
     ).rstrip("/")
     DASHSCOPE_VL_MODEL = os.getenv("DASHSCOPE_VL_MODEL", "qwen-vl-plus")
     DASHSCOPE_VL_TIMEOUT = float(os.getenv("DASHSCOPE_VL_TIMEOUT", "30.0"))
+    STYLE_TAG_LIST = os.getenv("STYLE_TAG_LIST", STYLE_TAG_LIST_DEFAULT)
 
     def get_logger(name: str):
         import logging
@@ -37,20 +82,8 @@ except ImportError:
 
 logger = get_logger(__name__)
 
-STYLE_TAG_ENUM = {
-    "搞笑", "治愈", "职场", "情侣", "朋友", "节日", "日常",
-    "萌系", "复古", "简约", "毒鸡汤", "励志",
-}
-
-USER_PROMPT_TEXT = """请根据这张表情包图片，严格按以下 JSON 格式输出一行，不要换行、不要 Markdown、不要其它说明：
-{"title":"简短标题","ocr_text":"图中全部文字","description":"一句话语义描述","usage_scenario":"使用场景描述","style_tag":"风格标签"}
-
-要求：
-- title：不超过 30 字，概括图片主题或图中文字。
-- ocr_text：图中出现的所有文字，没有则 ""。
-- description：一句话描述图片内容或含义。
-- usage_scenario：平易近人、适合在什么场合用，70 字以内。
-- style_tag：必须且只能从以下选一个：搞笑、治愈、职场、情侣、朋友、节日、日常、萌系、复古、简约、毒鸡汤、励志。"""
+STYLE_TAG_ENUM = _parse_style_tag_csv(STYLE_TAG_LIST)
+USER_PROMPT_TEXT = _build_vl_user_prompt(STYLE_TAG_ENUM)
 
 
 def _parse_json_from_content(content: str) -> Optional[Dict[str, Any]]:

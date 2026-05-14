@@ -23,4 +23,7 @@ class ImageGenerateResponse(BaseModel):
     image_url: str = Field(..., description="生成图 OSS 公网 URL")
     usage_scenario: str = Field(..., description="使用场景描述（平易近人、可使用的场景）")
     embedding_id: str = Field(..., description="Milvus 用户生成图集合主键")
-    style_tag: str = Field(..., description="风格标签，从固定枚举中选取（如搞笑、治愈、日常）")
+    style_tag: str = Field(
+        ...,
+        description="风格标签；从 STYLE_TAG_LIST 固定枚举选取（如搞笑、生气、吐槽、职场、日常），见 app/core/style_tag_defaults.py",
+    )
