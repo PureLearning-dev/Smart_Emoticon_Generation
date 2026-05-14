@@ -28,6 +28,32 @@
   font-weight: 600;
 }
 
+.gen-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.gen-fav-btn {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0 24rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  font-size: 24rpx;
+  color: #fe2c55;
+  background: rgba(254, 44, 85, 0.1);
+  border: 2rpx solid rgba(254, 44, 85, 0.35);
+}
+
+.gen-fav-btn--on {
+  color: #ffffff;
+  background: #fe2c55;
+  border-color: #fe2c55;
+}
+
 .subtitle {
   margin-top: 12rpx;
   display: block;

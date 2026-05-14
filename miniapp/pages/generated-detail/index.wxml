@@ -4,7 +4,17 @@
 
   <view wx:else>
     <view class="card">
-      <text class="title">表情包详情</text>
+      <view class="gen-title-row">
+        <text class="title">表情包详情</text>
+        <button
+          wx:if="{{showFavoriteBar}}"
+          class="gen-fav-btn {{favorited ? 'gen-fav-btn--on' : ''}}"
+          size="mini"
+          loading="{{favoriteBusy}}"
+          disabled="{{favoriteBusy}}"
+          bindtap="onToggleFavorite"
+        >{{favorited ? '已收藏' : '收藏'}}</button>
+      </view>
       <image
         class="cover"
         src="{{detail.generatedImageUrl}}"

@@ -1,8 +1,16 @@
 /**
  * 生成图详情页
- * 职责：展示生成图大图与元数据；提供保存到相册与一键分享
+ * 职责：展示生成图大图与元数据；提供保存到相册、一键分享、收藏（GENERATED_IMAGE）
  */
 const { getGeneratedImageDetail } = require("../../services/generatedImage");
+const { getToken } = require("../../utils/auth");
+const {
+  addFavorite,
+  removeFavorite,
+  getFavoriteStatus
+} = require("../../services/favorites");
+
+const TARGET_GENERATED = "GENERATED_IMAGE";
 
 /**
  * 将后端返回的创建时间格式化为「xxx年x月x日 HH:mm」
@@ -32,17 +40,31 @@ Page({
     id: "",
     detail: null,
     loading: false,
-    saving: false
+    saving: false,
+    showFavoriteBar: false,
+    favorited: false,
+    favoriteBusy: false
   },
 
   async onLoad(options) {
     const id = options && options.id ? String(options.id) : "";
-    this.setData({ id });
+    const n = Number(id);
+    const showFavoriteBar = !!(id && !Number.isNaN(n) && n > 0);
+    this.setData({ id, showFavoriteBar });
     if (!id) {
       wx.showToast({ title: "参数缺失", icon: "none" });
       return;
     }
     await this.loadDetail();
+    if (showFavoriteBar) {
+      await this.refreshFavoriteStatus();
+    }
+  },
+
+  async onShow() {
+    if (this.data.showFavoriteBar && this.data.id) {
+      await this.refreshFavoriteStatus();
+    }
   },
 
   async loadDetail() {
@@ -58,6 +80,52 @@ Page({
       wx.showToast({ title: msg, icon: "none" });
     } finally {
       this.setData({ loading: false });
+    }
+  },
+
+  async refreshFavoriteStatus() {
+    if (!this.data.showFavoriteBar || !this.data.id) return;
+    if (!getToken()) {
+      this.setData({ favorited: false });
+      return;
+    }
+    try {
+      const res = await getFavoriteStatus(TARGET_GENERATED, Number(this.data.id));
+      const favorited = !!(res && (res.favorited === true || res.favorited === "true"));
+      this.setData({ favorited });
+    } catch (e) {
+      this.setData({ favorited: false });
+    }
+  },
+
+  async onToggleFavorite() {
+    if (!this.data.showFavoriteBar || !this.data.id) return;
+    if (!getToken()) {
+      wx.showToast({ title: "请先登录", icon: "none" });
+      wx.navigateTo({ url: "/pages/login/index" });
+      return;
+    }
+    if (this.data.favoriteBusy) return;
+    const targetId = Number(this.data.id);
+    this.setData({ favoriteBusy: true });
+    try {
+      if (this.data.favorited) {
+        await removeFavorite(TARGET_GENERATED, targetId);
+        this.setData({ favorited: false });
+        wx.showToast({ title: "已取消收藏", icon: "success" });
+      } else {
+        await addFavorite({
+          targetType: TARGET_GENERATED,
+          targetId,
+          source: "generated"
+        });
+        this.setData({ favorited: true });
+        wx.showToast({ title: "收藏成功", icon: "success" });
+      }
+    } catch (e) {
+      await this.refreshFavoriteStatus();
+    } finally {
+      this.setData({ favoriteBusy: false });
     }
   },
 
@@ -132,4 +200,3 @@ Page({
     };
   }
 });
-
