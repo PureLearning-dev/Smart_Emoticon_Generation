@@ -1,9 +1,17 @@
 /**
  * 详情页逻辑
- * 职责：展示表情包详情或首页推荐文章详情
+ * 职责：展示表情包详情或首页推荐文章详情；素材库详情支持收藏（user_favorites / MEME_ASSET）
  */
 const { getMemeDetail } = require("../../services/meme");
 const { getHomepageRecommendationDetail } = require("../../services/plaza");
+const { getToken } = require("../../utils/auth");
+const {
+  addFavorite,
+  removeFavorite,
+  getFavoriteStatus
+} = require("../../services/favorites");
+
+const TARGET_MEME = "MEME_ASSET";
 
 Page({
   data: {
@@ -11,7 +19,19 @@ Page({
     type: "meme",
     detail: null,
     loading: false,
-    saving: false
+    saving: false,
+    showFavoriteBar: false,
+    favorited: false,
+    favoriteBusy: false
+  },
+
+  /**
+   * 是否展示素材收藏条：需有效数字 id + 非文章
+   */
+  computeShowFavoriteBar(id, pageType) {
+    if (pageType === "article") return false;
+    const n = Number(id);
+    return !!(id && !Number.isNaN(n) && n > 0);
   },
 
   /**
@@ -23,7 +43,8 @@ Page({
     const type = options.type || "meme";
     const fallbackFileUrl = options.fileUrl ? decodeURIComponent(options.fileUrl) : "";
     const fallbackOcrText = options.ocrText ? decodeURIComponent(options.ocrText) : "";
-    this.setData({ id, type });
+    const showFavoriteBar = this.computeShowFavoriteBar(id, type);
+    this.setData({ id, type, showFavoriteBar });
 
     if (!id) {
       this.setData({
@@ -32,7 +53,8 @@ Page({
           ocrText: fallbackOcrText,
           title: "临时详情",
           description: "当前结果来自搜索参数透传"
-        }
+        },
+        favorited: false
       });
       return;
     }
@@ -47,6 +69,68 @@ Page({
       // request 层已统一 toast
     } finally {
       this.setData({ loading: false });
+    }
+
+    if (showFavoriteBar) {
+      await this.refreshFavoriteStatus();
+    }
+  },
+
+  async onShow() {
+    if (this.data.showFavoriteBar && this.data.id) {
+      await this.refreshFavoriteStatus();
+    }
+  },
+
+  /**
+   * 拉取当前用户对当前素材是否已收藏
+   */
+  async refreshFavoriteStatus() {
+    if (!this.data.showFavoriteBar || !this.data.id) return;
+    if (!getToken()) {
+      this.setData({ favorited: false });
+      return;
+    }
+    try {
+      const res = await getFavoriteStatus(TARGET_MEME, Number(this.data.id));
+      const favorited = !!(res && (res.favorited === true || res.favorited === "true"));
+      this.setData({ favorited });
+    } catch (e) {
+      this.setData({ favorited: false });
+    }
+  },
+
+  /**
+   * 收藏 / 取消收藏（需登录）
+   */
+  async onToggleFavorite() {
+    if (!this.data.showFavoriteBar || !this.data.id) return;
+    if (!getToken()) {
+      wx.showToast({ title: "请先登录", icon: "none" });
+      wx.navigateTo({ url: "/pages/login/index" });
+      return;
+    }
+    if (this.data.favoriteBusy) return;
+    const targetId = Number(this.data.id);
+    this.setData({ favoriteBusy: true });
+    try {
+      if (this.data.favorited) {
+        await removeFavorite(TARGET_MEME, targetId);
+        this.setData({ favorited: false });
+        wx.showToast({ title: "已取消收藏", icon: "success" });
+      } else {
+        await addFavorite({
+          targetType: TARGET_MEME,
+          targetId,
+          source: "detail"
+        });
+        this.setData({ favorited: true });
+        wx.showToast({ title: "收藏成功", icon: "success" });
+      }
+    } catch (e) {
+      await this.refreshFavoriteStatus();
+    } finally {
+      this.setData({ favoriteBusy: false });
     }
   },
 

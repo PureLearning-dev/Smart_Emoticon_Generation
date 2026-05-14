@@ -19,6 +19,19 @@
       </view>
     </view>
 
+    <view wx:if="{{type !== 'article' && showFavoriteBar}}" class="card favorite-card">
+      <view class="favorite-row">
+        <text class="favorite-hint">{{favorited ? '已在「我的收藏」中' : '添加到「我的收藏」便于下次查看'}}</text>
+        <button
+          class="favorite-btn {{favorited ? 'favorite-btn--on' : ''}}"
+          size="mini"
+          loading="{{favoriteBusy}}"
+          disabled="{{favoriteBusy}}"
+          bindtap="onToggleFavorite"
+        >{{favorited ? '已收藏' : '收藏'}}</button>
+      </view>
+    </view>
+
     <view wx:if="{{type === 'article'}}" class="card">
       <view class="section-head">
         <text class="section-title">文章摘要</text>
