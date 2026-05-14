@@ -263,7 +263,7 @@ export default function MemeAssetsPage() {
             <Input placeholder="如：职场、日常" />
           </Form.Item>
           <Form.Item name="styleTag" label="风格标签">
-            <Input placeholder="如：搞笑、治愈" />
+            <Input placeholder="如：搞笑、生气、吐槽、职场" />
           </Form.Item>
           <Form.Item name="ocrText" label="OCR 文本">
             <Input.TextArea rows={3} placeholder="图中文字" />
