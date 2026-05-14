@@ -2,6 +2,9 @@
 
 根目录
 
+- [x] **小程序收藏闭环（2026-05）**：`services/favorites.js` + `api.favorites` 对接 `/api/favorites`；`pages/detail` 素材详情展示收藏按钮（MEME_ASSET，`source=detail`）；`pages/generated-detail` 支持生成图收藏（GENERATED_IMAGE）；`pages/user/favorites` 分页列表、下拉刷新、跳转详情。验证：与现有 `user_favorites` 表及后端 DTO 字段一致。
+- [x] **小程序广场/生成页顶栏与搜索页统一（2026-05）**：`pages/plaza`、`pages/ai-generate` 顶部改为与 `pages/search` 一致的 `hero-card`（eyebrow + 标题 + badge + 副标题 + 浅绿装饰）；广场将搜索框与风格标签并入同一 hero 分区，去掉独立「一格」标题卡；主色与按钮与搜索页绿色体系对齐。
+- [x] **style_tag 扩充与 VL/文生图提示词（2026-05）**：新增 `app/core/style_tag_defaults.py` 作为默认枚举 CSV 单一来源；扩充生气/吐槽/无语等情绪类及判别细则，`vision_metadata` 提示词与 `STYLE_TAG_LIST` 动态对齐；文生图 `_generate_usage_scenario_and_style_tag` system 提示同步要点；`.env.example`、小程序广场筛选、`admin-web` 占位提示已对齐。验证：`python -m py_compile` 相关模块通过。
 - [x] **仓库维护（2026-05）**：根目录散落资料移至 `docs/notes`、`docs/diagrams`、`docs/assets`；`Function.md` 路径更新为 `docs/notes/Function.md`；根 `.gitignore` 补充 `node_modules`/`dist`/`target`/`.venv*`/`smart_meter/.m2`/`admin-web/.env`；删除误置于 `smart_meter/.m2` 的本地 Maven 缓存（功能不变，验证：`mvn compile`、`admin-web npm run build` 通过）。
 - [x] **OCR 切换百度通用文字识别（2026-05）**：`ai-kore` 新增 `ocr_api/baidu_general_basic.py` 独立封装百度 `general_basic` API；`ocr/engine.py` 按 `OCR_ENGINE=baidu|paddle` 分发，Paddle 历史逻辑迁移到 `ocr/paddle_ocr_legacy.py`；`.env.example`、`Cursor.md` 已补充配置说明。验证：`python -m py_compile` 与客户端解析逻辑校验通过。
 - [x] **小程序搜索数据源统一为爬虫素材（2026-05）**：`pages/search`、`pages/search-text`、`pages/search-image` 改用 `services/memeSearch.js`，统一调用 `/api/meme-search*` 检索 `meme_embeddings + meme_assets`；结果详情跳转 `pages/detail`，避免将素材库 id 误传给用户生成图详情页。

@@ -318,6 +318,8 @@ smart_meter/                                    # Spring Boot 主业务微服务
 
 ### 微信小程序 miniapp
 
+- **收藏**：后端 **`/api/favorites`**（JWT）；小程序 **`services/favorites.js`**；素材详情 **`pages/detail`**、生成图详情 **`pages/generated-detail`** 提供收藏/取消；**`pages/user/favorites`** 分页列表入口自用户中心。
+- **广场 / AI 生成页顶栏**：与 **pages/search** 一致使用 `hero-card`（eyebrow、大标题、角标、副标题、右上角淡绿光晕）；广场页的搜索与风格标签放在同一 `hero-card` 内 `hero-body`，避免单独小标题白卡片；主操作色与搜索统一为 `#07c160` 系。
 - **风格**：小红书风格，主色 `#FE2C55`，卡片圆角 16rpx，背景 `#F7F8FA`。
 - **TabBar 图标**：优先使用第三方图标（如 iconfont.cn 下载 81×81 PNG），不要自行生成；可用 `sips -z 81 81 xxx.png` 缩放。
 - **不要使用 van-pull-refresh**：真机可能报错，推荐页用原生 `enablePullDownRefresh`。
@@ -337,3 +339,10 @@ smart_meter/                                    # Spring Boot 主业务微服务
 
 - **写入链路**：ai-kore 管线 `image_pipeline.process_single_image` → 视觉大模型（可选）得到 usage_scenario → `save_to_mysql(..., usage_scenario=...)` → smart_meter `POST /api/meme-assets/from-pipeline` → `MemeAssetServiceImpl.createFromPipeline` → MyBatis-Plus 写入 `usage_scenario` 列。
 - **若 MySQL 中 usage_scenario 仍为空**：(1) 确认表中有该列：无则执行 `SQL/migrate_meme_assets_usage_scenario.sql`；(2) 实体已用 `@TableField("usage_scenario")` 显式映射；(3) 仅**新入库**的图片会带 usage_scenario；**已存在**的 embedding_id 会直接返回不更新，故历史记录需重新跑管线（新 URL）或手动 UPDATE 补全。
+
+### style_tag 固定枚举（爬虫 VL + 文生图）
+
+- **单一默认来源**：`ai-kore/app/core/style_tag_defaults.py` 中的 **`STYLE_TAG_LIST_DEFAULT`**（逗号分隔）。`app/core/config.py` 的 **`STYLE_TAG_LIST`** 默认读该串，可用环境变量 **`STYLE_TAG_LIST`** 全量覆盖。
+- **爬虫入库 VL**：`pipeline/vision_metadata.py` 将 `STYLE_TAG_LIST` 解析为 `STYLE_TAG_ENUM`，提示词 **`USER_PROMPT_TEXT`** 动态拼入合法标签，并含「场景优先 / 生气≠搞笑」等判别细则；模型返回不在枚举内时 `_normalize_meta` 回落为「日常」。
+- **文生图**：`app/api/v1/image_gen.py` 中 `_generate_usage_scenario_and_style_tag` 的 system 提示与上述口径对齐，第二行标签仍须在 `STYLE_TAG_LIST` 内（可 1～2 个英文逗号分隔）。
+- **前端**：小程序广场 `pages/plaza/index.js` 的 `STYLE_TAGS` 应与默认枚举一致，便于筛选；改枚举时需同步该数组与 `.env.example`。
