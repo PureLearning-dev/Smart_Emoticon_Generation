@@ -327,7 +327,7 @@ smart_meter/                                    # Spring Boot 主业务微服务
 ### 管理后台 admin-web（仪表盘与造数）
 
 - 登录后首页（`/`）展示各业务表条数：后端 **`GET /api/admin/stats`**（`AdminController`），前端 `fetchAdminStats` + React Query 拉取并支持刷新。
-- **爬取素材**：侧边栏「爬取素材」→ 路由 **`/crawled-assets`**，对接 **`/api/admin/meme-assets`** 列表与增删改，数据源 **`meme_assets`**（与「离线入库」页 `/crawl` 区分：后者为 URL 批量入库操作，前者为表数据运维）。
+- **爬取素材**：侧边栏「爬取素材」→ 路由 **`/crawled-assets`**，对接 **`GET /api/admin/meme-assets`**（分页：`page`、`size`；筛选：`keyword`、`status`、`sourceType`）与 **`POST/PUT/DELETE /api/admin/meme-assets`** 增删改，数据源 **`meme_assets`**（与「离线入库」页 `/crawl` 区分：后者为 URL 批量入库操作，前者为表数据运维）。删除仅删 MySQL，不自动删 Milvus。
 - **离线入库调用 ai-kore 报错 `Unexpected end of file`**：`smart_meter` 已配置 **`ai-kore.read-timeout-ms`**（默认 600000）延长 HTTP 读超时；若仍失败，多为 **ai-kore 进程在处理中崩溃**（尤其 PaddleOCR），请查看 ai-kore 终端日志，或临时 **`OCR_ENABLED=false`** 重启 Python 端排除 OCR。
 - 答辩/联调演示数据：执行 **`SQL/seed_admin_demo.sql`**（先核对脚本内 `USE` 库名与 `application.yaml` 一致）；种子用户默认密码见脚本注释（BCrypt 与后端 `PasswordEncoder` 一致）。
 - 各模块 CRUD 与接口核对清单：**`docs/ADMIN_CRUD_VERIFICATION.md`**；统计接口专项提示词：**`docs/PROMPT_ADMIN_DASHBOARD_STATS.md`**。

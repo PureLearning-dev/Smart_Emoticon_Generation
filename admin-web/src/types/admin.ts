@@ -101,6 +101,23 @@ export interface MemeAssetRow {
 
 export type MemeAssetPayload = Omit<MemeAssetRow, 'id' | 'createTime' | 'updateTime'>
 
+/** GET /api/admin/meme-assets 分页查询参数 */
+export interface MemeAssetListParams {
+  page?: number
+  size?: number
+  keyword?: string
+  status?: number
+  sourceType?: number
+}
+
+/** GET /api/admin/meme-assets 分页响应（与 AdminMemeAssetPageResponse 对齐） */
+export interface MemeAssetPageResponse {
+  records: MemeAssetRow[]
+  total: number
+  page: number
+  size: number
+}
+
 /** 管理后台首页聚合统计（与 GET /api/admin/stats 对齐） */
 export interface AdminStats {
   userTotal: number

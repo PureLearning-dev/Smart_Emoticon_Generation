@@ -2,6 +2,7 @@ package com.purelearning.smart_meter.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.purelearning.smart_meter.dto.admin.AdminGeneratedImageRequest;
+import com.purelearning.smart_meter.dto.admin.AdminMemeAssetPageResponse;
 import com.purelearning.smart_meter.dto.admin.AdminMemeAssetRequest;
 import com.purelearning.smart_meter.dto.admin.AdminPlazaArticleRequest;
 import com.purelearning.smart_meter.dto.admin.AdminPlazaContentRequest;
@@ -338,14 +339,65 @@ public class AdminController {
     }
 
     @GetMapping("/meme-assets")
-    @Operation(summary = "管理端爬虫素材列表", description = "返回 meme_assets 全量列表，按创建时间、id 倒序。")
-    public List<MemeAsset> listMemeAssets() {
-        log.info(">>> [管理] GET /api/admin/meme-assets");
-        List<MemeAsset> list = memeAssetMapper.selectList(new LambdaQueryWrapper<MemeAsset>()
-                .orderByDesc(MemeAsset::getCreateTime)
-                .orderByDesc(MemeAsset::getId));
-        log.info("<<< [管理] GET /api/admin/meme-assets count={}", list.size());
-        return list;
+    @Operation(
+            summary = "管理端爬虫素材分页列表",
+            description = "分页查询 meme_assets；keyword 对 title、ocr_text、embedding_id、source 模糊匹配；"
+                    + "status、sourceType 可选精确筛选。按创建时间、id 倒序。"
+    )
+    public AdminMemeAssetPageResponse listMemeAssets(
+            @Parameter(description = "页码，从 1 开始") @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "每页条数，最大 200") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "关键词（模糊匹配标题、OCR、embeddingId、来源）") @RequestParam(required = false) String keyword,
+            @Parameter(description = "状态：1 正常，0 下架") @RequestParam(required = false) Integer status,
+            @Parameter(description = "来源类型：1 系统采集，2 用户创作成品") @RequestParam(required = false) Integer sourceType) {
+        int p = Math.max(1, page);
+        int s = Math.min(Math.max(size, 1), 200);
+        log.info(">>> [管理] GET /api/admin/meme-assets page={} size={} keyword={} status={} sourceType={}",
+                p, s, keyword, status, sourceType);
+
+        LambdaQueryWrapper<MemeAsset> countWrapper = new LambdaQueryWrapper<>();
+        applyMemeAssetAdminFilters(countWrapper, keyword, status, sourceType);
+        long total = memeAssetMapper.selectCount(countWrapper);
+
+        LambdaQueryWrapper<MemeAsset> listWrapper = new LambdaQueryWrapper<>();
+        applyMemeAssetAdminFilters(listWrapper, keyword, status, sourceType);
+        listWrapper.orderByDesc(MemeAsset::getCreateTime).orderByDesc(MemeAsset::getId);
+        int offset = (p - 1) * s;
+        listWrapper.last("LIMIT " + offset + "," + s);
+        List<MemeAsset> records = memeAssetMapper.selectList(listWrapper);
+        log.info("<<< [管理] GET /api/admin/meme-assets total={} returned={}", total, records.size());
+        return new AdminMemeAssetPageResponse(records, total, p, s);
+    }
+
+    /**
+     * 管理端 meme_assets 列表的公共筛选条件（不含排序与分页）。
+     *
+     * @param wrapper    查询包装器
+     * @param keyword    模糊匹配 title、ocr_text、embedding_id、source
+     * @param status     精确匹配状态，可为 null
+     * @param sourceType 精确匹配来源类型，可为 null
+     */
+    private static void applyMemeAssetAdminFilters(
+            LambdaQueryWrapper<MemeAsset> wrapper,
+            String keyword,
+            Integer status,
+            Integer sourceType) {
+        if (StringUtils.hasText(keyword)) {
+            String k = keyword.trim();
+            wrapper.and(w -> w.like(MemeAsset::getTitle, k)
+                    .or()
+                    .like(MemeAsset::getOcrText, k)
+                    .or()
+                    .like(MemeAsset::getEmbeddingId, k)
+                    .or()
+                    .like(MemeAsset::getSource, k));
+        }
+        if (status != null) {
+            wrapper.eq(MemeAsset::getStatus, status);
+        }
+        if (sourceType != null) {
+            wrapper.eq(MemeAsset::getSourceType, sourceType);
+        }
     }
 
     @PostMapping("/meme-assets")

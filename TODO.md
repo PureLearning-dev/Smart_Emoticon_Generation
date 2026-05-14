@@ -12,7 +12,7 @@
 - [x] **管理后台仪表盘与演示造数（2026-05）**：后端 `GET /api/admin/stats` 聚合各表 COUNT；admin-web 首页展示真实条数并支持刷新；新增 `SQL/seed_admin_demo.sql` 种子用户/广场/生成图/素材示例；验证说明见 `docs/ADMIN_CRUD_VERIFICATION.md`。
 - [x] **小程序头像上传登录态修复（2026-05）**：用户中心更换头像时实时读取 token，避免页面缓存状态滞后导致已登录仍提示先登录；`uploadFile` 遇到 401 时统一清理登录态并提示重新登录；后端 `/api/user/profile/avatar` 对未登录/无效 token 明确返回 401。验证：IDE lint 无新增错误，`./mvnw -q -DskipTests compile` 通过；`./mvnw -q test` 受既有 WebMvcTest 缺少 MyBatis `sqlSessionFactory` 影响未通过。
 - [x] **OCR 超时与默认值（2026-05）**：`ai-kore` 增加 `OCR_ENABLED`、`OCR_TIMEOUT_SECONDS`、`OCR_DEFAULT_TEXT`；`ocr.engine.recognize_text_with_deadline` 在线程池中限时等待 PaddleOCR，超时或异常返回默认文案；`image_pipeline` 在启用 OCR 时使用该逻辑；`OCR_ENABLED=false` 时仍跳过 OCR 且不预加载模型。验证：配置项见 `ai-kore/.env.example`；`python -m py_compile` 相关模块通过。
-- [x] **管理后台爬取素材 CRUD（2026-05）**：`smart_meter` 新增 `GET/POST/PUT/DELETE /api/admin/meme-assets`，请求体 `AdminMemeAssetRequest`；`admin-web` 侧边栏「爬取素材」、路由 `/crawled-assets`、页面 `MemeAssets.tsx` 表格展示 `meme_assets` 并支持增删改；删除仅删 MySQL，不含 Milvus 清理。验证：`./mvnw -DskipTests compile`、`admin-web npm run build` 通过。
+- [x] **管理后台爬取素材 CRUD（2026-05）**：`smart_meter` 提供 `GET/POST/PUT/DELETE /api/admin/meme-assets`；`GET` 返回分页体 `AdminMemeAssetPageResponse`（`page`、`size`、`keyword`、`status`、`sourceType`），列表 SQL 使用 `COUNT` + `LIMIT`；请求体 `AdminMemeAssetRequest`；`admin-web`「爬取素材」页对接分页与筛选；删除仅删 MySQL，不含 Milvus 清理。验证：`./mvnw -DskipTests compile`、`admin-web npm run build` 通过。
 - [x] **ai-kore 爬虫调用读超时（2026-05）**：`RestTemplate` 使用 `SimpleClientHttpRequestFactory`，`application.yaml` 增加 `ai-kore.connect-timeout-ms`、`ai-kore.read-timeout-ms`（默认 10 分钟），避免离线入库耗时过长时出现 `Unexpected end of file`；`CrawlController` 错误 hint 补充 OCR 崩溃排查。验证：`./mvnw -DskipTests compile`。
 
 ## 安装和配置

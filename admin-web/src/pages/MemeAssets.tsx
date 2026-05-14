@@ -33,9 +33,23 @@ export default function MemeAssetsPage() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<MemeAssetRow | null>(null)
   const [form] = Form.useForm<MemeAssetPayload>()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [keywordInput, setKeywordInput] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [filterStatus, setFilterStatus] = useState<number | undefined>(undefined)
+  const [filterSourceType, setFilterSourceType] = useState<number | undefined>(undefined)
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['meme-assets'],
-    queryFn: fetchMemeAssets,
+    queryKey: ['meme-assets', page, pageSize, keyword, filterStatus, filterSourceType],
+    queryFn: () =>
+      fetchMemeAssets({
+        page,
+        size: pageSize,
+        keyword: keyword || undefined,
+        status: filterStatus,
+        sourceType: filterSourceType,
+      }),
   })
 
   const saveMutation = useMutation({
@@ -149,6 +163,47 @@ export default function MemeAssetsPage() {
           新增
         </Button>
       </Space>
+      <Space wrap style={{ marginBottom: 16 }} align="start">
+        <Input.Search
+          allowClear
+          placeholder="标题 / OCR / embeddingId / 来源"
+          style={{ width: 280 }}
+          value={keywordInput}
+          onChange={(e) => setKeywordInput(e.target.value)}
+          onSearch={(v) => {
+            setKeyword((v || '').trim())
+            setPage(1)
+          }}
+        />
+        <Select
+          allowClear
+          placeholder="状态"
+          style={{ width: 120 }}
+          value={filterStatus}
+          onChange={(v) => {
+            setFilterStatus(v === undefined ? undefined : Number(v))
+            setPage(1)
+          }}
+          options={[
+            { value: 1, label: '正常' },
+            { value: 0, label: '下架' },
+          ]}
+        />
+        <Select
+          allowClear
+          placeholder="来源类型"
+          style={{ width: 140 }}
+          value={filterSourceType}
+          onChange={(v) => {
+            setFilterSourceType(v === undefined ? undefined : Number(v))
+            setPage(1)
+          }}
+          options={[
+            { value: 1, label: '系统采集' },
+            { value: 2, label: '用户成品' },
+          ]}
+        />
+      </Space>
       <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
         展示离线入库/爬虫写入的表情包主数据；删除仅删除 MySQL 记录，不自动删除 Milvus 向量，如需一致请另行运维。
       </Typography.Paragraph>
@@ -159,9 +214,20 @@ export default function MemeAssetsPage() {
         rowKey="id"
         loading={isLoading}
         columns={columns}
-        dataSource={data ?? []}
+        dataSource={data?.records ?? []}
         scroll={{ x: 1400 }}
-        pagination={{ pageSize: 15, showSizeChanger: true }}
+        pagination={{
+          current: page,
+          pageSize,
+          total: data?.total ?? 0,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50', '100'],
+          showTotal: (t) => `共 ${t} 条`,
+          onChange: (p, ps) => {
+            setPage(p)
+            setPageSize(ps)
+          },
+        }}
       />
 
       <Modal

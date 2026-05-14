@@ -6,6 +6,8 @@ import type {
   AdminUserPayload,
   GeneratedImage,
   GeneratedImagePayload,
+  MemeAssetListParams,
+  MemeAssetPageResponse,
   MemeAssetPayload,
   MemeAssetRow,
   PlazaArticle,
@@ -189,10 +191,33 @@ export async function deletePlazaArticle(id: number): Promise<boolean> {
   return Boolean(data)
 }
 
-/** 爬虫素材 meme_assets 列表（管理端） */
-export async function fetchMemeAssets(): Promise<MemeAssetRow[]> {
-  const { data } = await apiClient.get<MemeAssetRow[]>('/api/admin/meme-assets')
-  return Array.isArray(data) ? data : []
+/**
+ * 爬虫素材 meme_assets 分页列表（管理端）。
+ *
+ * @param params 分页与筛选：page 从 1 开始；size 最大 200；keyword 模糊匹配标题/OCR/embeddingId/来源；status、sourceType 可选精确筛选
+ */
+export async function fetchMemeAssets(params: MemeAssetListParams = {}): Promise<MemeAssetPageResponse> {
+  const page = params.page && params.page > 0 ? params.page : 1
+  const size = params.size && params.size > 0 ? params.size : 20
+  const search = new URLSearchParams()
+  search.set('page', String(page))
+  search.set('size', String(size))
+  if (params.keyword?.trim()) {
+    search.set('keyword', params.keyword.trim())
+  }
+  if (params.status !== undefined && params.status !== null) {
+    search.set('status', String(params.status))
+  }
+  if (params.sourceType !== undefined && params.sourceType !== null) {
+    search.set('sourceType', String(params.sourceType))
+  }
+  const { data } = await apiClient.get<MemeAssetPageResponse>(`/api/admin/meme-assets?${search.toString()}`)
+  return {
+    records: Array.isArray(data?.records) ? data.records : [],
+    total: typeof data?.total === 'number' ? data.total : 0,
+    page: typeof data?.page === 'number' ? data.page : page,
+    size: typeof data?.size === 'number' ? data.size : size,
+  }
 }
 
 export async function createMemeAsset(payload: MemeAssetPayload): Promise<MemeAssetRow> {
