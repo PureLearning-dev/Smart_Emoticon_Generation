@@ -1,38 +1,41 @@
 <view class="page">
-  <view class="card head-card">
-    <text class="title">公共广场</text>
-    <text class="subtitle">浏览用户公开生成的表情包</text>
-  </view>
-
-  <view class="card search-card">
-    <view class="search-row">
-      <input
-        class="search-input"
-        placeholder="搜索使用场景或描述"
-        placeholder-class="placeholder"
-        value="{{searchInput}}"
-        bindinput="onSearchInput"
-        bindconfirm="onSearchConfirm"
-        confirm-type="search"
-      />
-      <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
-    </view>
-  </view>
-
-  <view class="card tags-card">
-    <scroll-view scroll-x class="tags-scroll" show-scrollbar="{{false}}">
-      <view class="tags-inner">
-        <view
-          class="tag-item {{selectedStyleTag === '' && item === '全部' ? 'tag-item-active' : ''}} {{selectedStyleTag === item ? 'tag-item-active' : ''}}"
-          wx:for="{{styleTags}}"
-          wx:key="*this"
-          data-tag="{{item}}"
-          bindtap="onSelectStyleTag"
-        >
-          <text>{{item}}</text>
-        </view>
+  <view class="hero-card">
+    <view class="hero-top">
+      <view>
+        <text class="eyebrow">PLAZA</text>
+        <text class="title">公共广场</text>
       </view>
-    </scroll-view>
+      <text class="hero-badge">用户作品</text>
+    </view>
+    <text class="subtitle">浏览大家公开生成的表情包，支持按场景搜索与风格标签筛选。</text>
+
+    <view class="hero-body">
+      <view class="search-row">
+        <input
+          class="search-input"
+          placeholder="搜索使用场景或描述"
+          placeholder-class="placeholder"
+          value="{{searchInput}}"
+          bindinput="onSearchInput"
+          bindconfirm="onSearchConfirm"
+          confirm-type="search"
+        />
+        <view class="search-btn" bindtap="onSearchConfirm">搜索</view>
+      </view>
+      <scroll-view scroll-x class="tags-scroll" show-scrollbar="{{false}}">
+        <view class="tags-inner">
+          <view
+            class="tag-item {{selectedStyleTag === '' && item === '全部' ? 'tag-item-active' : ''}} {{selectedStyleTag === item ? 'tag-item-active' : ''}}"
+            wx:for="{{styleTags}}"
+            wx:key="*this"
+            data-tag="{{item}}"
+            bindtap="onSelectStyleTag"
+          >
+            <text>{{item}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 
   <view class="card list-card">
